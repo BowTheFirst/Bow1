@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Book</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid #000;
+            touch-action: none;
+        }
+
+        #toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <input id="color-picker" type="color" value="#000000">
+        <input id="size-picker" type="range" min="1" max="50" value="5">
+        <button onclick="handleClear()">Clear</button>
+        <button onclick="handleSave()">Save</button>
+        <button id="toggle-button" onclick="toggleDrawMode()">Toggle Draw/Erase</button>
+        <button onclick="handleUndo()">Undo</button>
+    </div>
+    <canvas id="drawingCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const context = canvas.getContext('2d');
+        let isDrawing = false;
+        let isErasing = false;
+        let drawingHistory = [];
+        let lastDrawingState;
+
+        function resizeCanvas() {
+            const aspectRatio = 3 / 4; // Adjust this as needed
+            const maxWidth = window.innerWidth;
+            const maxHeight = window.innerHeight;
+
+            let canvasWidth = maxWidth;
+            let canvasHeight = maxWidth / aspectRatio;
+
+            if (canvasHeight > maxHeight) {
+                canvasHeight = maxHeight;
+                canvasWidth = maxHeight * aspectRatio;
+            }
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            redrawCanvas();
+            saveDrawingState(); // Save initial state when resizing
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            context.beginPath();
+            saveDrawingState();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+
+            context.lineWidth = document.getElementById('size-picker').value;
+            context.lineCap = 'round';
+
+            if (isErasing) {
+                context.globalCompositeOperation = 'destination-out';
+                context.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+                context.globalCompositeOperation = 'source-over';
+                context.strokeStyle = document.getElementById('color-picker').value;
+            }
+
+            context.lineTo(x - canvas.offsetLeft, y - canvas.offsetTop);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(x - canvas.offsetLeft, y - canvas.offsetTop);
+        }
+
+        function handleClear() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            saveDrawingState();
+        }
+
+        function handleSave() {
+            const imageData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = 'drawing.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function toggleDrawMode() {
+            isErasing = !isErasing;
+            const toggleButton = document.getElementById('toggle-button');
+            toggleButton.style.color = isErasing ? 'green' : 'black';
+        }
+
+        function handleUndo() {
+            if (drawingHistory.length > 1) {
+                drawingHistory.pop();
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(drawingHistory[drawingHistory.length - 1], 0, 0);
+            }
+        }
+
+        function saveDrawingState() {
+            lastDrawingState = new Image();
+            lastDrawingState.src = canvas.toDataURL();
+            drawingHistory.push(lastDrawingState);
+        }
+
+        function redrawCanvas() {
+            if (lastDrawingState) {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(lastDrawingState, 0, 0);
+            }
+        }
+
+        // Initial setup
+        resizeCanvas();
+
+        // Event listeners
+        window.addEventListener('resize', resizeCanvas);
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchend',
+        stopDrawing);
+        canvas.addEventListener('touchmove', draw);
+    </script>
+</body>
+</html>
