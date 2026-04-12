@@ -297,6 +297,7 @@ canvas {
             <button class="sci-fi-btn" onclick="startEndless()">ENDLESS MODE</button>
             <button class="sci-fi-btn btn-purple" onclick="openStageSelect()">STAGES</button>
             <button class="sci-fi-btn btn-gold" onclick="openShop()">PERMANENT SHOP</button>
+            <button class="sci-fi-btn" onclick="openCyberTree()" style="border-color:#00ffcc; color:#00ffcc;">CYBER TREE</button>
         </div>
     </div>
 </div>
@@ -319,6 +320,13 @@ canvas {
     <button onclick="closeDev()" style="background:none; border: 1px solid rgba(255,255,255,0.2); color:white; font-size:12px; margin-top:30px; padding:10px; cursor:pointer;">TERMINATE_SESSION</button>
 </div>
 <div id="shopUI"><div class="scanlines"></div><h2>ARMORY</h2><div class="menu-stats">CREDITS: 💰 <span id="shopBank">0</span></div><div class="cards" id="shopCards"></div><button class="sci-fi-btn" onclick="closeShop()" style="border-color:#ff4444; color:#ff4444; width: 200px;">EXIT_SHOP</button></div>
+<div id="cyberTreeUI" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,5,10,0.97); z-index:400; flex-direction:column; align-items:center; overflow-y:auto; padding:20px; box-sizing:border-box;">
+<div class="scanlines"></div>
+<h2 style="color:#00ffcc; text-shadow:0 0 15px #00ffcc; letter-spacing:5px; margin-bottom:5px;">CYBER_TREE</h2>
+<div style="color:rgba(0,255,204,0.5); font-size:10px; letter-spacing:3px; margin-bottom:10px;">PERMANENT_NEURAL_UPGRADES // CREDITS: 💰 <span id="treeBank">0</span></div>
+<div id="treeNodes" style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px; max-width:800px; padding:10px;"></div>
+<button class="sci-fi-btn" onclick="closeCyberTree()" style="border-color:#ff4444; color:#ff4444; width:200px; margin-top:20px;">EXIT_TREE</button>
+</div>
 <div id="gameOver"><div class="scanlines"></div><h1>GAME OVER</h1><p id="finalScore"></p><div style="display: flex; z-index: 302;"><button onclick="restartCurrent()">RETRY</button><button onclick="resetGame(); showMenu();" style="border-color:#555; color:#555;">MAIN MENU</button></div></div>
 <canvas id="game"></canvas>
 <script>
@@ -377,6 +385,11 @@ function drawCyberPlane(x, y, angle) {
     if (activeSkin === "inferno") { drawInfernoPlane(x, y, angle); return; }
     if (activeSkin === "viper") { drawViperPlane(x, y, angle); return; }
     if (activeSkin === "ghost") { drawGhostPlane(x, y, angle); return; }
+    if (activeSkin === "solar") { drawSolarPlane(x, y, angle); return; }
+    if (activeSkin === "nebula") { drawNebulaPlane(x, y, angle); return; }
+    if (activeSkin === "void") { drawVoidPlane(x, y, angle); return; }
+    if (activeSkin === "quantum") { drawQuantumPlane(x, y, angle); return; }
+    if (activeSkin === "celestial") { drawCelestialPlane(x, y, angle); return; }
     ctx.save(); 
     ctx.translate(x, y); 
     ctx.rotate(angle + Math.PI/2);
@@ -722,10 +735,214 @@ function drawInfernoPlane(x, y, angle) {
     }
     ctx.restore();
 }
+function drawSolarPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Solar corona glow
+    ctx.globalAlpha = 0.15 + Math.sin(t * 3) * 0.08;
+    let corona = ctx.createRadialGradient(0, -5, 5, 0, -5, 35);
+    corona.addColorStop(0, '#fff'); corona.addColorStop(0.3, '#ffcc00'); corona.addColorStop(0.6, '#ff6600'); corona.addColorStop(1, 'transparent');
+    ctx.fillStyle = corona; ctx.beginPath(); ctx.arc(0, -5, 35, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1.0;
+    // Main hull - golden solar interceptor
+    let hullGrad = ctx.createLinearGradient(0, -22, 0, 18);
+    hullGrad.addColorStop(0, '#ffcc00'); hullGrad.addColorStop(0.4, '#ff8800'); hullGrad.addColorStop(1, '#cc4400');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-14, 12); ctx.lineTo(-6, 8); ctx.lineTo(0, 18); ctx.lineTo(6, 8); ctx.lineTo(14, 12); ctx.closePath(); ctx.fill();
+    // Solar panel wings
+    ctx.fillStyle = '#ffaa00'; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.moveTo(-14, 2); ctx.lineTo(-28, 14); ctx.lineTo(-20, 16); ctx.lineTo(-10, 8); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(14, 2); ctx.lineTo(28, 14); ctx.lineTo(20, 16); ctx.lineTo(10, 8); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1.0;
+    // Panel grid lines
+    ctx.strokeStyle = '#ffdd44'; ctx.lineWidth = 0.5;
+    for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-14 - i*4, 4 + i*3); ctx.lineTo(-10 - i*2, 8 + i*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(14 + i*4, 4 + i*3); ctx.lineTo(10 + i*2, 8 + i*2); ctx.stroke(); }
+    // Cockpit sun lens
+    let cockpit = ctx.createRadialGradient(0, -8, 1, 0, -8, 6);
+    cockpit.addColorStop(0, '#fff'); cockpit.addColorStop(0.5, '#ffee88'); cockpit.addColorStop(1, '#ff8800');
+    ctx.fillStyle = cockpit; ctx.beginPath(); ctx.ellipse(0, -8, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // Solar flare engine
+    for (let i = 0; i < 4; i++) {
+        ctx.globalAlpha = 0.5 + Math.random() * 0.3;
+        let fLen = 8 + Math.random() * 12;
+        let fX = (Math.random() - 0.5) * 10;
+        let fGrad = ctx.createLinearGradient(fX, 18, fX, 18 + fLen);
+        fGrad.addColorStop(0, '#fff'); fGrad.addColorStop(0.3, '#ffcc00'); fGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = fGrad; ctx.beginPath(); ctx.moveTo(fX - 3, 18); ctx.lineTo(fX, 18 + fLen); ctx.lineTo(fX + 3, 18); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+}
+function drawNebulaPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Nebula cloud aura
+    ctx.globalAlpha = 0.12;
+    for (let i = 0; i < 3; i++) {
+        let nRad = 30 + Math.sin(t * 2 + i) * 8;
+        let nGrad = ctx.createRadialGradient(Math.cos(t + i*2) * 5, Math.sin(t + i*2) * 5, 0, 0, 0, nRad);
+        let colors = ['#ff00ff', '#8800ff', '#0088ff'];
+        nGrad.addColorStop(0, colors[i]); nGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = nGrad; ctx.beginPath(); ctx.arc(0, 0, nRad, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
+    // Main hull - nebula cruiser
+    let hullGrad = ctx.createLinearGradient(-15, 0, 15, 0);
+    hullGrad.addColorStop(0, '#8800ff'); hullGrad.addColorStop(0.5, '#cc00ff'); hullGrad.addColorStop(1, '#ff44aa');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.bezierCurveTo(-8, -14, -16, 4, -12, 16); ctx.lineTo(0, 12); ctx.lineTo(12, 16); ctx.bezierCurveTo(16, 4, 8, -14, 0, -24); ctx.closePath(); ctx.fill();
+    // Wing tendrils
+    ctx.strokeStyle = '#cc66ff'; ctx.lineWidth = 2; ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(-12, 4); ctx.quadraticCurveTo(-24, 8 + Math.sin(t*4)*3, -20, 18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(12, 4); ctx.quadraticCurveTo(24, 8 + Math.sin(t*4+1)*3, 20, 18); ctx.stroke();
+    ctx.globalAlpha = 1.0;
+    // Starfield cockpit
+    let cockpitG = ctx.createRadialGradient(0, -10, 0, 0, -10, 5);
+    cockpitG.addColorStop(0, '#fff'); cockpitG.addColorStop(0.4, '#dd88ff'); cockpitG.addColorStop(1, '#8800cc');
+    ctx.fillStyle = cockpitG; ctx.beginPath(); ctx.ellipse(0, -10, 4, 7, 0, 0, Math.PI * 2); ctx.fill();
+    // Twinkling stars inside cockpit
+    ctx.fillStyle = '#fff';
+    for (let s = 0; s < 4; s++) { ctx.globalAlpha = 0.5 + Math.sin(t * 6 + s * 2) * 0.5; ctx.beginPath(); ctx.arc(Math.sin(s*1.5+t)*2.5, -10 + Math.cos(s*2+t)*3, 0.6, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1.0;
+    // Nebula engine trail
+    for (let i = 0; i < 3; i++) {
+        ctx.globalAlpha = 0.4 + Math.random() * 0.3;
+        let eLen = 10 + Math.random() * 15;
+        let eGrad = ctx.createLinearGradient(0, 14, 0, 14 + eLen);
+        eGrad.addColorStop(0, '#ff88ff'); eGrad.addColorStop(0.5, '#8844ff'); eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad; ctx.beginPath();
+        ctx.moveTo(-4 + i*2, 14); ctx.lineTo(-2 + i*2, 14 + eLen); ctx.lineTo(i*2, 14); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+}
+function drawVoidPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Void distortion field
+    ctx.globalAlpha = 0.08;
+    for (let r = 40; r > 10; r -= 8) {
+        ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, r + Math.sin(t*3+r)*3, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1.0;
+    // Main hull - void black with dim edges
+    let hullGrad = ctx.createLinearGradient(0, -20, 0, 18);
+    hullGrad.addColorStop(0, '#1a1a2e'); hullGrad.addColorStop(0.5, '#0a0a14'); hullGrad.addColorStop(1, '#000005');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.lineTo(-16, 8); ctx.lineTo(-10, 14); ctx.lineTo(0, 10); ctx.lineTo(10, 14); ctx.lineTo(16, 8); ctx.closePath(); ctx.fill();
+    // Void edge glow
+    ctx.strokeStyle = '#4400aa'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.6 + Math.sin(t*4)*0.2;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.lineTo(-16, 8); ctx.lineTo(-10, 14); ctx.lineTo(0, 10); ctx.lineTo(10, 14); ctx.lineTo(16, 8); ctx.closePath(); ctx.stroke();
+    ctx.globalAlpha = 1.0;
+    // Void eye cockpit
+    let eyeGrad = ctx.createRadialGradient(0, -6, 0, 0, -6, 7);
+    eyeGrad.addColorStop(0, '#000'); eyeGrad.addColorStop(0.4, '#110022'); eyeGrad.addColorStop(0.8, '#4400aa'); eyeGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eyeGrad; ctx.beginPath(); ctx.arc(0, -6, 7, 0, Math.PI*2); ctx.fill();
+    // Void eye pupil
+    ctx.fillStyle = '#8800ff'; ctx.beginPath(); ctx.arc(Math.sin(t*2)*2, -6 + Math.cos(t*1.5)*1, 2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(Math.sin(t*2)*2 + 0.5, -6.5 + Math.cos(t*1.5)*1, 0.7, 0, Math.PI*2); ctx.fill();
+    // Silent void engine (dark anti-matter)
+    ctx.globalAlpha = 0.4;
+    let vGrad = ctx.createLinearGradient(0, 12, 0, 30);
+    vGrad.addColorStop(0, '#220044'); vGrad.addColorStop(0.5, '#110022'); vGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = vGrad; ctx.beginPath(); ctx.moveTo(-6, 12); ctx.lineTo(0, 28 + Math.sin(t*5)*4); ctx.lineTo(6, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawQuantumPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Quantum probability cloud
+    ctx.globalAlpha = 0.06;
+    for (let i = 0; i < 5; i++) {
+        let qx = Math.sin(t*3 + i*1.3) * 15; let qy = Math.cos(t*2.5 + i*1.7) * 15;
+        let qGrad = ctx.createRadialGradient(qx, qy, 0, qx, qy, 12);
+        qGrad.addColorStop(0, '#00ffcc'); qGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = qGrad; ctx.beginPath(); ctx.arc(qx, qy, 12, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
+    // Main hull - quantum teal/white
+    let hullGrad = ctx.createLinearGradient(-12, 0, 12, 0);
+    hullGrad.addColorStop(0, '#008888'); hullGrad.addColorStop(0.3, '#00cccc'); hullGrad.addColorStop(0.5, '#88ffee'); hullGrad.addColorStop(0.7, '#00cccc'); hullGrad.addColorStop(1, '#008888');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-10, -4); ctx.lineTo(-14, 12); ctx.lineTo(-4, 16); ctx.lineTo(0, 10); ctx.lineTo(4, 16); ctx.lineTo(14, 12); ctx.lineTo(10, -4); ctx.closePath(); ctx.fill();
+    // Quantum circuit lines
+    ctx.strokeStyle = '#00ffcc'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(-8, -2); ctx.lineTo(-8, 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(8, -2); ctx.lineTo(8, 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-4, 2); ctx.lineTo(4, 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1.0;
+    // Quantum core cockpit (flickering between states)
+    let phase = Math.floor(t * 8) % 2;
+    let coreColor = phase ? '#00ffee' : '#88ffcc';
+    ctx.fillStyle = coreColor; ctx.shadowColor = '#00ffcc'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, -8, 4, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    // Entangled particle pair engine
+    let p1x = Math.sin(t*6) * 4, p2x = -Math.sin(t*6) * 4;
+    ctx.fillStyle = '#00ffcc'; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.arc(p1x, 18, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p2x, 20, 2, 0, Math.PI*2); ctx.fill();
+    // Entanglement line
+    ctx.strokeStyle = '#00ffcc'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(p1x, 18); ctx.lineTo(p2x, 20); ctx.stroke();
+    ctx.restore();
+}
+function drawCelestialPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Celestial halo rings
+    ctx.globalAlpha = 0.1;
+    for (let i = 0; i < 3; i++) {
+        let ringR = 25 + i * 8 + Math.sin(t*2 + i)*3;
+        ctx.strokeStyle = i === 0 ? '#ffd700' : i === 1 ? '#fff' : '#aaddff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.ellipse(0, 0, ringR, ringR * 0.3, t * 0.5 + i * 0.5, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1.0;
+    // Main hull - divine white-gold
+    let hullGrad = ctx.createLinearGradient(0, -25, 0, 20);
+    hullGrad.addColorStop(0, '#fff'); hullGrad.addColorStop(0.3, '#ffeedd'); hullGrad.addColorStop(0.6, '#ffd700'); hullGrad.addColorStop(1, '#cc8800');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -25); ctx.bezierCurveTo(-6, -18, -14, 0, -12, 14); ctx.lineTo(-4, 18); ctx.lineTo(0, 14); ctx.lineTo(4, 18); ctx.lineTo(12, 14); ctx.bezierCurveTo(14, 0, 6, -18, 0, -25); ctx.closePath(); ctx.fill();
+    // Angelic wing extensions
+    ctx.fillStyle = 'rgba(255,215,0,0.3)';
+    ctx.beginPath(); ctx.moveTo(-12, 0); ctx.quadraticCurveTo(-30, -4 + Math.sin(t*3)*3, -24, 12); ctx.lineTo(-12, 8); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(12, 0); ctx.quadraticCurveTo(30, -4 + Math.sin(t*3)*3, 24, 12); ctx.lineTo(12, 8); ctx.closePath(); ctx.fill();
+    // Feather detail lines
+    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.5;
+    for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-14-i*4, 2+i*2); ctx.lineTo(-20-i*2, 8+i*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(14+i*4, 2+i*2); ctx.lineTo(20+i*2, 8+i*2); ctx.stroke(); }
+    ctx.globalAlpha = 1.0;
+    // Divine eye cockpit
+    let eyeG = ctx.createRadialGradient(0, -10, 0, 0, -10, 6);
+    eyeG.addColorStop(0, '#fff'); eyeG.addColorStop(0.3, '#ffeebb'); eyeG.addColorStop(0.7, '#ffd700'); eyeG.addColorStop(1, '#cc8800');
+    ctx.fillStyle = eyeG; ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(0, -10, 5, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    // Holy light engine
+    for (let i = 0; i < 5; i++) {
+        ctx.globalAlpha = 0.3 + Math.random() * 0.4;
+        let lLen = 10 + Math.random() * 18;
+        let lGrad = ctx.createLinearGradient(0, 16, 0, 16 + lLen);
+        lGrad.addColorStop(0, '#fff'); lGrad.addColorStop(0.4, '#ffd700'); lGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = lGrad; ctx.beginPath();
+        let lx = (Math.random()-0.5) * 8;
+        ctx.moveTo(lx-2, 16); ctx.lineTo(lx, 16+lLen); ctx.lineTo(lx+2, 16); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+}
 const ProjectileManager = { drawProjectiles(list, color) { if (list.length === 0) return; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = color; ctx.lineCap = 'round'; list.forEach(p => { ctx.lineWidth = p.size * 1.5; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(p.prevX || p.x, p.prevY || p.y); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.globalAlpha = 1.0; ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }); ctx.restore(); } };
 const CHAPTER_1_DATA = { 1: { name: "Calibration", spawnRate: 100, enemySpeed: 1.2, enemyHp: 1, shootChance: 0, bgColor: "#000510" }, 2: { name: "First Contact", spawnRate: 80, enemySpeed: 1.4, enemyHp: 2, shootChance: 0.3, bgColor: "#050010" }, 3: { name: "Asteroid Belt", spawnRate: 40, enemySpeed: 1.8, enemyHp: 5, shootChance: 0, bgColor: "#101010" }, 4: { name: "Defensive Perimeter", spawnRate: 60, enemySpeed: 1.5, enemyHp: 3, shootChance: 0.6, bgColor: "#150000" }, 5: { name: "The Gatekeeper", spawnRate: 90, enemySpeed: 2.0, enemyHp: 4, shootChance: 0.2, bgColor: "#000" } };
 const CHAPTER_2_DATA = { 1: { name: "Ion Storm", spawnRate: 70, enemySpeed: 1.1, enemyHp: 3, shootChance: 0, bgColor: "#001515" }, 2: { name: "Orbital Drift", spawnRate: 65, enemySpeed: 1.4, enemyHp: 4, shootChance: 0.1, bgColor: "#150015" }, 3: { name: "Pulse Point", spawnRate: 55, enemySpeed: 1.2, enemyHp: 5, shootChance: 0.3, bgColor: "#000020" }, 4: { name: "Twin Strike", spawnRate: 45, enemySpeed: 1.9, enemyHp: 3, shootChance: 0.7, bgColor: "#100010" }, 5: { name: "The Void Core", spawnRate: 80, enemySpeed: 1.6, enemyHp: 5, shootChance: 0.2, bgColor: "#000" } };
 const CHAPTER_3_DATA = { 1: { name: "Short Circuit", spawnRate: 50, enemySpeed: 1.8, enemyHp: 4, shootChance: 0.4, bgColor: "#0a0a1a" }, 2: { name: "Data Leak", spawnRate: 45, enemySpeed: 2.0, enemyHp: 5, shootChance: 0.5, bgColor: "#0a1a0a" }, 3: { name: "The Grid", spawnRate: 35, enemySpeed: 2.2, enemyHp: 6, shootChance: 0.2, bgColor: "#1a0a1a" }, 4: { name: "High Voltage", spawnRate: 30, enemySpeed: 2.5, enemyHp: 5, shootChance: 0.8, bgColor: "#000000" }, 5: { name: "The Mainframe", spawnRate: 60, enemySpeed: 2.0, enemyHp: 10, shootChance: 0.5, bgColor: "#050505" } };
+const CHAPTER_4_DATA = { 1: { name: "Warp Entry", spawnRate: 45, enemySpeed: 2.2, enemyHp: 6, shootChance: 0.3, bgColor: "#0a000a" }, 2: { name: "Gravity Well", spawnRate: 40, enemySpeed: 2.4, enemyHp: 7, shootChance: 0.4, bgColor: "#14000a" }, 3: { name: "Singularity", spawnRate: 35, enemySpeed: 2.6, enemyHp: 8, shootChance: 0.5, bgColor: "#0a0014" }, 4: { name: "Event Horizon", spawnRate: 30, enemySpeed: 2.8, enemyHp: 9, shootChance: 0.6, bgColor: "#140014" }, 5: { name: "Black Hole Core", spawnRate: 50, enemySpeed: 2.5, enemyHp: 15, shootChance: 0.5, bgColor: "#050005" } };
+const CHAPTER_5_DATA = { 1: { name: "Frozen Drift", spawnRate: 50, enemySpeed: 1.8, enemyHp: 8, shootChance: 0.3, bgColor: "#000a14" }, 2: { name: "Cryo Chamber", spawnRate: 40, enemySpeed: 2.0, enemyHp: 10, shootChance: 0.5, bgColor: "#001420" }, 3: { name: "Ice Nova", spawnRate: 35, enemySpeed: 2.5, enemyHp: 12, shootChance: 0.4, bgColor: "#000a20" }, 4: { name: "Absolute Zero", spawnRate: 28, enemySpeed: 2.8, enemyHp: 10, shootChance: 0.7, bgColor: "#001430" }, 5: { name: "The Glacier", spawnRate: 45, enemySpeed: 2.2, enemyHp: 20, shootChance: 0.5, bgColor: "#000510" } };
+const CHAPTER_6_DATA = { 1: { name: "Solar Flare", spawnRate: 40, enemySpeed: 2.5, enemyHp: 10, shootChance: 0.4, bgColor: "#1a0a00" }, 2: { name: "Plasma Storm", spawnRate: 35, enemySpeed: 2.8, enemyHp: 12, shootChance: 0.5, bgColor: "#200a00" }, 3: { name: "Corona Burst", spawnRate: 30, enemySpeed: 3.0, enemyHp: 14, shootChance: 0.6, bgColor: "#2a0a00" }, 4: { name: "Fusion Core", spawnRate: 25, enemySpeed: 3.2, enemyHp: 12, shootChance: 0.8, bgColor: "#301400" }, 5: { name: "The Sun Eater", spawnRate: 40, enemySpeed: 2.8, enemyHp: 25, shootChance: 0.6, bgColor: "#140500" } };
+const CHAPTER_7_DATA = { 1: { name: "Shadow Gate", spawnRate: 38, enemySpeed: 2.8, enemyHp: 12, shootChance: 0.5, bgColor: "#050005" }, 2: { name: "Void Rift", spawnRate: 32, enemySpeed: 3.0, enemyHp: 14, shootChance: 0.6, bgColor: "#0a000a" }, 3: { name: "Dark Matter", spawnRate: 28, enemySpeed: 3.2, enemyHp: 16, shootChance: 0.5, bgColor: "#0f000f" }, 4: { name: "Entropy Field", spawnRate: 24, enemySpeed: 3.5, enemyHp: 14, shootChance: 0.8, bgColor: "#14000a" }, 5: { name: "The Abyss", spawnRate: 35, enemySpeed: 3.0, enemyHp: 30, shootChance: 0.6, bgColor: "#030003" } };
+const CHAPTER_8_DATA = { 1: { name: "Quantum Flux", spawnRate: 35, enemySpeed: 3.0, enemyHp: 14, shootChance: 0.5, bgColor: "#000a0a" }, 2: { name: "Particle Storm", spawnRate: 30, enemySpeed: 3.2, enemyHp: 16, shootChance: 0.6, bgColor: "#001414" }, 3: { name: "Wave Collapse", spawnRate: 25, enemySpeed: 3.4, enemyHp: 18, shootChance: 0.6, bgColor: "#000a14" }, 4: { name: "Superposition", spawnRate: 22, enemySpeed: 3.6, enemyHp: 16, shootChance: 0.9, bgColor: "#001420" }, 5: { name: "The Observer", spawnRate: 30, enemySpeed: 3.2, enemyHp: 40, shootChance: 0.7, bgColor: "#000505" } };
+const CHAPTER_9_DATA = { 1: { name: "Neural Link", spawnRate: 32, enemySpeed: 3.2, enemyHp: 16, shootChance: 0.6, bgColor: "#0a0a00" }, 2: { name: "Synaptic Fire", spawnRate: 28, enemySpeed: 3.5, enemyHp: 18, shootChance: 0.7, bgColor: "#141400" }, 3: { name: "Memory Leak", spawnRate: 24, enemySpeed: 3.7, enemyHp: 20, shootChance: 0.6, bgColor: "#0a0a05" }, 4: { name: "Stack Overflow", spawnRate: 20, enemySpeed: 3.8, enemyHp: 18, shootChance: 0.9, bgColor: "#14140a" }, 5: { name: "The Architect", spawnRate: 28, enemySpeed: 3.5, enemyHp: 50, shootChance: 0.7, bgColor: "#050500" } };
+const CHAPTER_10_DATA = { 1: { name: "Final Protocol", spawnRate: 28, enemySpeed: 3.5, enemyHp: 20, shootChance: 0.7, bgColor: "#140000" }, 2: { name: "System Purge", spawnRate: 24, enemySpeed: 3.8, enemyHp: 22, shootChance: 0.8, bgColor: "#1a0500" }, 3: { name: "Core Meltdown", spawnRate: 20, enemySpeed: 4.0, enemyHp: 25, shootChance: 0.7, bgColor: "#200a00" }, 4: { name: "Omega Cascade", spawnRate: 18, enemySpeed: 4.2, enemyHp: 22, shootChance: 1.0, bgColor: "#2a0a00" }, 5: { name: "GOD_PROCESS", spawnRate: 25, enemySpeed: 3.8, enemyHp: 75, shootChance: 0.8, bgColor: "#0a0000" } };
+const ALL_CHAPTER_DATA = { 1: CHAPTER_1_DATA, 2: CHAPTER_2_DATA, 3: CHAPTER_3_DATA, 4: CHAPTER_4_DATA, 5: CHAPTER_5_DATA, 6: CHAPTER_6_DATA, 7: CHAPTER_7_DATA, 8: CHAPTER_8_DATA, 9: CHAPTER_9_DATA, 10: CHAPTER_10_DATA };
 class Joystick { constructor(isLeft) { this.isLeft = isLeft; this.baseX = 0; this.baseY = 0; this.currX = 0; this.currY = 0; this.active = false; this.touchId = null; this.radius = 50; this.vx = 0; this.vy = 0; this.lastAngle = 0; } draw() { if (!this.active) return; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 0.3; ctx.beginPath(); ctx.arc(this.baseX, this.baseY, this.radius, 0, Math.PI * 2); ctx.strokeStyle = "cyan"; ctx.lineWidth = 3; ctx.stroke(); ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(this.currX, this.currY, 25, 0, Math.PI * 2); ctx.fillStyle = "cyan"; ctx.fill(); ctx.restore(); } }
 const leftStick = new Joystick(true); const rightStick = new Joystick(false);
 let gameRunning = false, paused = false, level = 1, xp = 0, currentRunCoins = 0, bossActive = false, frameCount = 0, shake = 0, stageTimer = 0, gameOverActive = false; 
@@ -735,17 +952,26 @@ let cyberPulseActive = false; let pulseWaves = []; let cyberPulseCards = 0;
 let gridPulse = 0, nukeCount = 0, medkitCount = 0, expMultiplier = 1.0, superNovaStacks = 0, superNovaCounter = 0;
 let layers = [ { speed: 0.2, size: 100, color: "rgba(0, 255, 255, 0.05)" }, { speed: 0.5, size: 250, color: "rgba(0, 255, 255, 0.02)" } ];
 
+let homingActive = false, plasmaFieldActive = false, overchargeStacks = 0, shadowCloneActive = false, gravWellActive = false, berserkerMode = false, nanobotHeal = false, phaseWalkActive = false, deathMarkActive = false, orbitalStrikeActive = false;
 const ALL_UPGRADES = { 
-    common: [ {name:"Speed", e:()=> player.speed += 0.8}, {name:"Fire Rate", e:()=> player.fireRate = Math.max(player.fireRate - 2, 4)}, {name:"Bullet Size", e:()=> player.bulletSize += 2}, {name:"Magnet", e:()=> magnetRange += 50} ], 
-    rare: [ {name:"Multi-Shot", e:()=> multiShot++}, {name:"Pierce", e:()=> pierceCount++}, {name:"Crit", e:()=> critChance += 0.15}, {name:"Frost Shot", e:()=> frostShot = true}, {name:"Vampirism", e:()=> vampirism += 0.05} ], 
-    epic: [ {name:"Tesla Aura", e:()=> teslaAura = true}, {name:"Drone Swarm", e:()=> droneCount++}, {name:"Shield", e:()=> shieldActive = true}, {name:"Chain Shot", e:()=> chainShot = true}, {name:"Cyber Pulse", e:()=> { cyberPulseActive = true; cyberPulseCards++; }}, { name: "EMP Burst", e: () => { setInterval(() => { if (gameRunning && !paused) { bullets = bullets.filter(b => { let dist = Math.hypot(b.x - player.x, b.y - player.y); if (dist < 250) { spawnParticles(b.x, b.y, "cyan", 2); return false; } return true; }); shake += 5; spawnParticles(player.x, player.y, "rgba(0, 255, 255, 0.3)", 20); } }, 10000); } }, { name: "Ricochet", e: () => { player.canBounce = true; } } ], 
-    legendary: [ {name:"God Mode", e:()=> { player.maxHealth += 10; player.health = player.maxHealth; player.speed += 2; }}, {name:"Hyper-Drive", e:()=> { player.fireRate = 2; multiShot += 2; player.bulletSize += 5; }}, {name:"Super Nova", e:()=> { superNovaStacks++; playSound("level", 0.6); }} ] 
+    common: [ {name:"Speed", e:()=> player.speed += 0.8}, {name:"Fire Rate", e:()=> player.fireRate = Math.max(player.fireRate - 2, 4)}, {name:"Bullet Size", e:()=> player.bulletSize += 2}, {name:"Magnet", e:()=> magnetRange += 50}, {name:"Hardened Hull", e:()=> { player.maxHealth += 2; player.health += 2; }}, {name:"Quick Dash", e:()=> player.speed += 1.2}, {name:"Scavenger", e:()=> expMultiplier += 0.3} ], 
+    rare: [ {name:"Multi-Shot", e:()=> multiShot++}, {name:"Pierce", e:()=> pierceCount++}, {name:"Crit", e:()=> critChance += 0.15}, {name:"Frost Shot", e:()=> frostShot = true}, {name:"Vampirism", e:()=> vampirism += 0.05}, {name:"Homing Rounds", e:()=> homingActive = true}, {name:"Death Mark", e:()=> deathMarkActive = true}, {name:"Nanobot Repair", e:()=> nanobotHeal = true}, {name:"Overcharge", e:()=> { overchargeStacks++; player.bulletSize += 1; critChance += 0.05; }} ], 
+    epic: [ {name:"Tesla Aura", e:()=> teslaAura = true}, {name:"Drone Swarm", e:()=> droneCount++}, {name:"Shield", e:()=> shieldActive = true}, {name:"Chain Shot", e:()=> chainShot = true}, {name:"Cyber Pulse", e:()=> { cyberPulseActive = true; cyberPulseCards++; }}, { name: "EMP Burst", e: () => { setInterval(() => { if (gameRunning && !paused) { bullets = bullets.filter(b => { let dist = Math.hypot(b.x - player.x, b.y - player.y); if (dist < 250) { spawnParticles(b.x, b.y, "cyan", 2); return false; } return true; }); shake += 5; spawnParticles(player.x, player.y, "rgba(0, 255, 255, 0.3)", 20); } }, 10000); } }, { name: "Ricochet", e: () => { player.canBounce = true; } }, {name:"Plasma Field", e:()=> plasmaFieldActive = true}, {name:"Shadow Clone", e:()=> shadowCloneActive = true}, {name:"Gravity Well", e:()=> gravWellActive = true}, {name:"Phase Walk", e:()=> phaseWalkActive = true} ], 
+    legendary: [ {name:"God Mode", e:()=> { player.maxHealth += 10; player.health = player.maxHealth; player.speed += 2; }}, {name:"Hyper-Drive", e:()=> { player.fireRate = 2; multiShot += 2; player.bulletSize += 5; }}, {name:"Super Nova", e:()=> { superNovaStacks++; playSound("level", 0.6); }}, {name:"Berserker", e:()=> { berserkerMode = true; player.speed += 3; critChance += 0.3; }}, {name:"Orbital Strike", e:()=> { orbitalStrikeActive = true; }} ] 
 };
 function initPlayer() { 
-    player = { x: canvas.width/2, y: canvas.height/2, hitbox: 8, speed: 5, health: 5 + permanentHPBonus, maxHealth: 5 + permanentHPBonus, fireRate: 15, bulletSize: 5, canBounce: false, trail: [] }; 
-    multiShot = 1; vampirism = 0; shieldActive = false; pierceCount = 1; critChance = 0; frostShot = false; magnetRange = 60; teslaAura = false; droneCount = 0; chainShot = false; pityCounter = 0; cyberPulseActive = false; pulseWaves = []; cyberPulseCards = 0; 
+    let hpBonus = cyberTreeData.hullArmor * 3;
+    let spdBonus = cyberTreeData.thrusterBoost * 0.3;
+    let magBonus = cyberTreeData.magnetCore * 30;
+    let critBonus = cyberTreeData.critMatrix * 0.03;
+    let frBonus = cyberTreeData.fireControl * 1;
+    let bsBonus = cyberTreeData.bulletForge * 1;
+    player = { x: canvas.width/2, y: canvas.height/2, hitbox: 8, speed: 5 + spdBonus, health: 5 + hpBonus, maxHealth: 5 + hpBonus, fireRate: Math.max(4, 15 - frBonus), bulletSize: 5 + bsBonus, canBounce: false, trail: [] }; 
+    multiShot = 1; vampirism = 0; shieldActive = cyberTreeData.shieldGen >= 5; pierceCount = 1; critChance = critBonus; frostShot = false; magnetRange = 60 + magBonus; teslaAura = false; droneCount = 0; chainShot = false; pityCounter = 0; cyberPulseActive = false; pulseWaves = []; cyberPulseCards = 0; 
     superNovaStacks = 0; 
-    superNovaCounter = 0; 
+    superNovaCounter = 0;
+    homingActive = false; plasmaFieldActive = false; overchargeStacks = 0; shadowCloneActive = false; gravWellActive = false; berserkerMode = false; nanobotHeal = cyberTreeData.lifeSupport >= 3; phaseWalkActive = false; deathMarkActive = false; orbitalStrikeActive = false;
+    expMultiplier = 1.0 + (cyberTreeData.xpAmplifier * 0.2); 
     stars = []; 
     for(let i=0; i<200; i++) { 
         stars.push({ x: Math.random() * 4000 - 2000, y: Math.random() * 4000 - 2000, z: Math.random() * 0.5 + 0.1, brightness: Math.random() }); 
@@ -757,7 +983,7 @@ function updateConsumableHUD() { const hud = document.getElementById("consumable
 function useNuke() { if(!gameRunning || paused || nukeCount <= 0) return; nukeCount--; enemies = []; bullets = []; shake += 40; spawnParticles(player.x, player.y, "red", 20); spawnShockwave(player.x, player.y); playSound("hit", 0.5); updateConsumableHUD(); }
 function useMedkit() { if(!gameRunning || paused || medkitCount <= 0) return; medkitCount--; player.health = Math.min(player.health + 2, player.maxHealth); spawnParticles(player.x, player.y, "#0f0", 15); playSound("level", 0.4); updateConsumableHUD(); }
 function startEndless() { isEndless = true; resetGame(); startGame(); }
-function openStageSelect() { setPauseBtnVisibility(false); document.getElementById("menu").style.display = "none"; const ui = document.getElementById("stageSelectUI"); ui.style.display = "flex"; shake += 15; const list = document.getElementById("stageList"); list.innerHTML = ""; for(let c = 1; c <= 3; c++) { let block = document.createElement("div"); block.className = "chapter-block"; block.innerHTML = `<div class="chapter-label">Sector 0${c} // Transmission_Active</div>`; let grid = document.createElement("div"); grid.className = "stage-grid"; for(let s = 1; s <= 5; s++) { let btn = document.createElement("div"); btn.className = "stage-btn"; btn.innerHTML = `<span>${s}</span>`; btn.onclick = () => { btn.style.background = "white"; setTimeout(() => selectStage(c, s), 100); }; grid.appendChild(btn); } block.appendChild(grid); list.appendChild(block); } }
+function openStageSelect() { setPauseBtnVisibility(false); document.getElementById("menu").style.display = "none"; const ui = document.getElementById("stageSelectUI"); ui.style.display = "flex"; shake += 15; const list = document.getElementById("stageList"); list.innerHTML = ""; for(let c = 1; c <= 10; c++) { let block = document.createElement("div"); block.className = "chapter-block"; let sectorColors = ["cyan","#0f0","#a0f","#ff00ff","#00ccff","#ff6600","#8800ff","#00ffcc","#ffcc00","#ff0044"]; let col = sectorColors[c-1] || "cyan"; block.innerHTML = `<div class="chapter-label" style="color:${col}; text-shadow:0 0 8px ${col};">Sector ${String(c).padStart(2,'0')} // ${c<=3?'Transmission_Active':c<=6?'Deep_Space_Signal':c<=8?'Anomaly_Detected':'CRITICAL_ZONE'}</div>`; let grid = document.createElement("div"); grid.className = "stage-grid"; for(let s = 1; s <= 5; s++) { let btn = document.createElement("div"); btn.className = "stage-btn"; btn.style.borderColor = col; btn.innerHTML = `<span>${s}</span>`; btn.onclick = () => { btn.style.background = "white"; setTimeout(() => selectStage(c, s), 100); }; grid.appendChild(btn); } block.appendChild(grid); list.appendChild(block); } }
 function selectStage(chapter, stage) { isEndless = false; currentChapter = chapter; currentStage = stage; document.getElementById("stageSelectUI").style.display = "none"; resetGame(); startGame(); }
 function closeStageSelect() { document.getElementById("stageSelectUI").style.display = "none"; document.getElementById("menu").style.display = "flex"; }
 let promptCallback = null;
@@ -831,12 +1057,12 @@ function restartCurrent() { resetGame(); startGame(); }
 function togglePause() { if (!gameRunning) return; paused = !paused; document.getElementById("pauseBtn").innerText = paused ? "RESUME" : "PAUSE"; document.getElementById("pauseOverlay").style.display = paused ? "flex" : "none"; setPauseBtnVisibility(true); playSound("click", 0.2); }
 function backToMenuFromPause() { paused = false; gameRunning = false; resetGame(); showMenu(); }
 function completeStage() { stageTimer = 0; currentStage++; paused = true; playSound("level", 0.5); customAlert(`Stage Clear! Entering Stage ${currentStage}`, () => { enemies = []; bullets = []; paused = false; }); }
-function spawnEnemy(){ const angle = Math.random() * Math.PI * 2; const dist = Math.max(canvas.width, canvas.height) / 1.5; let type = "normal", hp = 1, speed = 1.2, size = 15, config = null; if (currentChapter === 1) config = CHAPTER_1_DATA[currentStage]; if (currentChapter === 2) config = CHAPTER_2_DATA[currentStage]; if (currentChapter === 3) config = CHAPTER_3_DATA[currentStage]; if (isEndless) { hp = 1 + Math.floor(level / 3); speed = 1.5 + (level * 0.05); if (Math.random() < 0.2) type = "scout"; } else if (config) { hp = config.enemyHp; speed = config.enemySpeed; if (currentChapter === 3) { let roll = Math.random(); if (roll < 0.3) type = "blinker"; else if (roll < 0.5) type = "tesla"; else type = "normal"; } else if (currentChapter === 2) { if (currentStage === 2) type = "orbiter"; if (currentStage === 3) type = "nova"; if (config.shootChance > Math.random()) type = "scout"; } else { if (currentStage === 3) type = "asteroid"; if (config.shootChance > Math.random()) type = "scout"; } } enemies.push({ x: player.x + Math.cos(angle) * dist, y: player.y + Math.sin(angle) * dist, hp: hp, speed: speed, size: type === "blinker" ? 12 : (type === "asteroid" || type === "nova" ? 25 : size), type: type, spawnTime: frameCount, lastAction: frameCount, frozen: 0, trail: [] }); }
-function spawnBoss(){ bossActive = true; let bossHp = isEndless ? (100 + (level * 20)) : (40 + (level * 20)); if (currentChapter === 3) bossHp *= 2; boss = { x: player.x, y: player.y - 400, hp: bossHp, maxHp: bossHp, angle: 0, trail: [] }; }
+function spawnEnemy(){ const angle = Math.random() * Math.PI * 2; const dist = Math.max(canvas.width, canvas.height) / 1.5; let type = "normal", hp = 1, speed = 1.2, size = 15, config = null; config = ALL_CHAPTER_DATA[currentChapter] ? ALL_CHAPTER_DATA[currentChapter][currentStage] : null; if (isEndless) { hp = 1 + Math.floor(level / 3); speed = 1.5 + (level * 0.05); let roll = Math.random(); if (level >= 50) { if (roll < 0.1) type = "reaper"; else if (roll < 0.2) type = "splitter"; else if (roll < 0.3) type = "shielder"; else if (roll < 0.4) type = "bomber"; else if (roll < 0.5) type = "phaser"; else if (roll < 0.6) type = "tesla"; else if (roll < 0.7) type = "blinker"; else if (roll < 0.8) type = "scout"; else type = "normal"; } else if (level >= 30) { if (roll < 0.12) type = "bomber"; else if (roll < 0.24) type = "phaser"; else if (roll < 0.36) type = "shielder"; else if (roll < 0.48) type = "tesla"; else if (roll < 0.60) type = "blinker"; else if (roll < 0.72) type = "scout"; else type = "normal"; } else if (level >= 15) { if (roll < 0.15) type = "blinker"; else if (roll < 0.3) type = "tesla"; else if (roll < 0.45) type = "scout"; else if (roll < 0.55) type = "orbiter"; else type = "normal"; } else { if (roll < 0.2) type = "scout"; else type = "normal"; } } else if (config) { hp = config.enemyHp; speed = config.enemySpeed; let roll = Math.random(); if (currentChapter >= 9) { if (roll < 0.15) type = "reaper"; else if (roll < 0.3) type = "splitter"; else if (roll < 0.45) type = "bomber"; else if (roll < 0.6) type = "phaser"; else if (roll < 0.7) type = "shielder"; else if (config.shootChance > Math.random()) type = "scout"; } else if (currentChapter >= 7) { if (roll < 0.2) type = "phaser"; else if (roll < 0.35) type = "shielder"; else if (roll < 0.5) type = "bomber"; else if (roll < 0.6) type = "blinker"; else if (config.shootChance > Math.random()) type = "scout"; } else if (currentChapter >= 5) { if (roll < 0.2) type = "bomber"; else if (roll < 0.35) type = "shielder"; else if (roll < 0.5) type = "tesla"; else if (roll < 0.6) type = "blinker"; else if (config.shootChance > Math.random()) type = "scout"; } else if (currentChapter === 4) { if (roll < 0.25) type = "blinker"; else if (roll < 0.45) type = "tesla"; else if (roll < 0.6) type = "orbiter"; else if (config.shootChance > Math.random()) type = "scout"; } else if (currentChapter === 3) { if (roll < 0.3) type = "blinker"; else if (roll < 0.5) type = "tesla"; else type = "normal"; } else if (currentChapter === 2) { if (currentStage === 2) type = "orbiter"; if (currentStage === 3) type = "nova"; if (config.shootChance > Math.random()) type = "scout"; } else { if (currentStage === 3) type = "asteroid"; if (config.shootChance > Math.random()) type = "scout"; } } let eSize = type === "blinker" ? 12 : (type === "asteroid" || type === "nova" || type === "bomber" ? 25 : (type === "reaper" ? 20 : (type === "splitter" ? 18 : (type === "shielder" ? 22 : size)))); enemies.push({ x: player.x + Math.cos(angle) * dist, y: player.y + Math.sin(angle) * dist, hp: hp, speed: speed, size: eSize, type: type, spawnTime: frameCount, lastAction: frameCount, frozen: 0, trail: [], shieldHp: type === "shielder" ? 3 : 0 }); }
+function spawnBoss(){ bossActive = true; let bossHp = isEndless ? (100 + (level * 20)) : (40 + (level * 20)); let chapterMult = 1 + (currentChapter - 1) * 0.5; bossHp = Math.floor(bossHp * chapterMult); boss = { x: player.x, y: player.y - 400, hp: bossHp, maxHp: bossHp, angle: 0, trail: [], chapter: currentChapter }; }
 function openShop() { setPauseBtnVisibility(false); document.getElementById("menu").style.display = "none"; const shop = document.getElementById("shopUI"); shop.style.display = "flex"; shop.style.opacity = "0"; setTimeout(() => { shop.style.opacity = "1"; shake += 15; }, 50); renderShop(); }
 let activeSkin = "default";
 let purchasedSkins = ["default"];
-function renderShop() { const shopBank = document.getElementById("shopBank"); if (shopBank) shopBank.innerText = globalCoins; const shopCards = document.getElementById("shopCards"); if (!shopCards) return; shopCards.innerHTML = ""; const items = [ { name: "Nuke", cost: 50, type: "CONSUMABLE", owned: false, desc: "Clears all enemies on screen", effect: () => { nukeCount++; updateConsumableHUD(); } }, { name: "Medkit", cost: 30, type: "CONSUMABLE", owned: false, desc: "Restores 2 HP instantly", effect: () => { medkitCount++; updateConsumableHUD(); } }, { name: "Armor Plating", cost: 150, type: "PERMANENT", owned: permanentHPBonus >= 500, desc: "+10 permanent max HP", effect: () => permanentHPBonus += 10 }, { name: "XP Siphon", cost: 200, type: "PERMANENT", owned: expMultiplier > 50.0, desc: "+0.5x XP multiplier", effect: () => expMultiplier += 0.5 }, { name: "Viper Skin", cost: 500, type: "SKIN", owned: purchasedSkins.includes("viper"), desc: "Toxic green stealth fighter", effect: () => { if(!purchasedSkins.includes("viper")) purchasedSkins.push("viper"); activeSkin = "viper"; } }, { name: "Ghost Skin", cost: 1000, type: "SKIN", owned: purchasedSkins.includes("ghost"), desc: "Spectral translucent hull", effect: () => { if(!purchasedSkins.includes("ghost")) purchasedSkins.push("ghost"); activeSkin = "ghost"; } }, { name: "Phantom Skin", cost: 60000, type: "SKIN", rarity: "EPIC", owned: purchasedSkins.includes("phantom"), desc: "Void-class interceptor with dual plasma thrusters and phase-shift plating", effect: () => { if(!purchasedSkins.includes("phantom")) purchasedSkins.push("phantom"); activeSkin = "phantom"; } }, { name: "Inferno Skin", cost: 100000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("inferno"), desc: "Hellfire-forged dreadnought with triple afterburners and ember particle trail", effect: () => { if(!purchasedSkins.includes("inferno")) purchasedSkins.push("inferno"); activeSkin = "inferno"; } } ]; items.forEach(item => { let div = document.createElement("div"); div.className = "shop-card"; const skinID = item.name.toLowerCase().split(" ")[0]; let isOwned = (item.type === "PERMANENT" || item.type === "SKIN") && item.owned; let isEquipped = item.type === "SKIN" && activeSkin === skinID; let status = item.type === "CONSUMABLE" ? "STOCK_AVAILABLE" : (isOwned ? (isEquipped ? "EQUIPPED" : "OWNED") : "AVAILABLE"); let priceTag = isOwned ? (isEquipped ? "ACTIVE" : "SELECT") : "\u{1F4B0}" + item.cost.toLocaleString(); let rarityLabel = item.rarity || (item.type === "SKIN" ? "RARE" : item.type); let borderColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.6)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.6)" : "rgba(255,215,0,0.3)"); let glowColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.3)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.2)" : "rgba(255,215,0,0.1)"); let nameColor = item.rarity === "LEGENDARY" ? "#ff4400" : (item.rarity === "EPIC" ? "#bf00ff" : "gold"); if (item.rarity === "LEGENDARY" || item.rarity === "EPIC") { div.style.borderColor = borderColor; div.style.boxShadow = `inset 0 0 20px ${glowColor}, 0 0 15px ${glowColor}`; } div.innerHTML = `<div style="font-size: 8px; opacity: 0.6; text-align:left;">TYPE: ${item.type} // ${rarityLabel}</div><div style="font-size: 14px; margin: 10px 0; font-weight: 900; color: ${nameColor}; text-shadow: 0 0 8px ${nameColor};">${item.name}</div><div style="font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 5px; flex-grow: 1; text-align:left; line-height: 1.4;">// ${item.desc}<br>// STATUS: ${status}</div><div style="font-size: 16px; border-top: 1px solid ${borderColor}; padding-top: 10px; ${isEquipped ? 'color: #0f0; text-shadow: 0 0 10px #0f0;' : ''}">${priceTag}</div>`; div.onpointerdown = () => {
+function renderShop() { const shopBank = document.getElementById("shopBank"); if (shopBank) shopBank.innerText = globalCoins; const shopCards = document.getElementById("shopCards"); if (!shopCards) return; shopCards.innerHTML = ""; const items = [ { name: "Nuke", cost: 50, type: "CONSUMABLE", owned: false, desc: "Clears all enemies on screen", effect: () => { nukeCount++; updateConsumableHUD(); } }, { name: "Medkit", cost: 30, type: "CONSUMABLE", owned: false, desc: "Restores 2 HP instantly", effect: () => { medkitCount++; updateConsumableHUD(); } }, { name: "Armor Plating", cost: 150, type: "PERMANENT", owned: permanentHPBonus >= 500, desc: "+10 permanent max HP", effect: () => permanentHPBonus += 10 }, { name: "XP Siphon", cost: 200, type: "PERMANENT", owned: expMultiplier > 50.0, desc: "+0.5x XP multiplier", effect: () => expMultiplier += 0.5 }, { name: "Viper Skin", cost: 500, type: "SKIN", owned: purchasedSkins.includes("viper"), desc: "Toxic green stealth fighter", effect: () => { if(!purchasedSkins.includes("viper")) purchasedSkins.push("viper"); activeSkin = "viper"; } }, { name: "Ghost Skin", cost: 1000, type: "SKIN", owned: purchasedSkins.includes("ghost"), desc: "Spectral translucent hull", effect: () => { if(!purchasedSkins.includes("ghost")) purchasedSkins.push("ghost"); activeSkin = "ghost"; } }, { name: "Phantom Skin", cost: 60000, type: "SKIN", rarity: "EPIC", owned: purchasedSkins.includes("phantom"), desc: "Void-class interceptor with dual plasma thrusters and phase-shift plating", effect: () => { if(!purchasedSkins.includes("phantom")) purchasedSkins.push("phantom"); activeSkin = "phantom"; } }, { name: "Inferno Skin", cost: 100000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("inferno"), desc: "Hellfire-forged dreadnought with triple afterburners and ember particle trail", effect: () => { if(!purchasedSkins.includes("inferno")) purchasedSkins.push("inferno"); activeSkin = "inferno"; } }, { name: "Solar Skin", cost: 150000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("solar"), desc: "Golden solar interceptor with corona glow and solar panel wings", effect: () => { if(!purchasedSkins.includes("solar")) purchasedSkins.push("solar"); activeSkin = "solar"; } }, { name: "Nebula Skin", cost: 200000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("nebula"), desc: "Nebula cruiser wreathed in cosmic gas clouds with tendril wings", effect: () => { if(!purchasedSkins.includes("nebula")) purchasedSkins.push("nebula"); activeSkin = "nebula"; } }, { name: "Void Skin", cost: 300000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("void"), desc: "Abyssal shadow hull with void eye and dark anti-matter engine", effect: () => { if(!purchasedSkins.includes("void")) purchasedSkins.push("void"); activeSkin = "void"; } }, { name: "Quantum Skin", cost: 500000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("quantum"), desc: "Quantum-state fighter with entangled particle engines and circuit hull", effect: () => { if(!purchasedSkins.includes("quantum")) purchasedSkins.push("quantum"); activeSkin = "quantum"; } }, { name: "Celestial Skin", cost: 1000000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("celestial"), desc: "Divine white-gold warship with halo rings and angelic wings", effect: () => { if(!purchasedSkins.includes("celestial")) purchasedSkins.push("celestial"); activeSkin = "celestial"; } }, { name: "Shield Recharge", cost: 75, type: "CONSUMABLE", owned: false, desc: "Grants shield for next run", effect: () => { nukeCount++; updateConsumableHUD(); } }, { name: "Coin Magnet", cost: 300, type: "PERMANENT", owned: false, desc: "+100 permanent magnet range", effect: () => magnetRange += 100 }, { name: "Starter Pack", cost: 500, type: "PERMANENT", owned: permanentHPBonus >= 1000 && expMultiplier > 100, desc: "+5 HP & +1.0x XP", effect: () => { permanentHPBonus += 5; expMultiplier += 1.0; } } ]; items.forEach(item => { let div = document.createElement("div"); div.className = "shop-card"; const skinID = item.name.toLowerCase().split(" ")[0]; let isOwned = (item.type === "PERMANENT" || item.type === "SKIN") && item.owned; let isEquipped = item.type === "SKIN" && activeSkin === skinID; let status = item.type === "CONSUMABLE" ? "STOCK_AVAILABLE" : (isOwned ? (isEquipped ? "EQUIPPED" : "OWNED") : "AVAILABLE"); let priceTag = isOwned ? (isEquipped ? "ACTIVE" : "SELECT") : "\u{1F4B0}" + item.cost.toLocaleString(); let rarityLabel = item.rarity || (item.type === "SKIN" ? "RARE" : item.type); let borderColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.6)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.6)" : "rgba(255,215,0,0.3)"); let glowColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.3)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.2)" : "rgba(255,215,0,0.1)"); let nameColor = item.rarity === "LEGENDARY" ? "#ff4400" : (item.rarity === "EPIC" ? "#bf00ff" : "gold"); if (item.rarity === "LEGENDARY" || item.rarity === "EPIC") { div.style.borderColor = borderColor; div.style.boxShadow = `inset 0 0 20px ${glowColor}, 0 0 15px ${glowColor}`; } div.innerHTML = `<div style="font-size: 8px; opacity: 0.6; text-align:left;">TYPE: ${item.type} // ${rarityLabel}</div><div style="font-size: 14px; margin: 10px 0; font-weight: 900; color: ${nameColor}; text-shadow: 0 0 8px ${nameColor};">${item.name}</div><div style="font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 5px; flex-grow: 1; text-align:left; line-height: 1.4;">// ${item.desc}<br>// STATUS: ${status}</div><div style="font-size: 16px; border-top: 1px solid ${borderColor}; padding-top: 10px; ${isEquipped ? 'color: #0f0; text-shadow: 0 0 10px #0f0;' : ''}">${priceTag}</div>`; div.onpointerdown = () => {
     const sid = item.name.toLowerCase().split(" ")[0];
     if (item.type === "SKIN" && purchasedSkins.includes(sid)) {
         activeSkin = sid;
@@ -856,13 +1082,35 @@ function renderShop() { const shopBank = document.getElementById("shopBank"); if
 };
 shopCards.appendChild(div); }); }
 function closeShop() { document.getElementById("shopUI").style.display = "none"; showMenu(); }
+
+let cyberTreeData = { hullArmor: 0, fireControl: 0, thrusterBoost: 0, magnetCore: 0, critMatrix: 0, shieldGen: 0, coinProcessor: 0, xpAmplifier: 0, bulletForge: 0, lifeSupport: 0 };
+const CYBER_TREE_NODES = [
+    { id: "hullArmor", name: "Hull Armor", desc: "+3 permanent max HP per level", maxLvl: 20, baseCost: 500, costMult: 1.8, icon: "🛡", color: "#00ccff", apply: (lvl) => { permanentHPBonus = lvl * 3; } },
+    { id: "fireControl", name: "Fire Control", desc: "Start with faster fire rate", maxLvl: 10, baseCost: 1000, costMult: 2.0, icon: "🔥", color: "#ff4400", apply: (lvl) => {} },
+    { id: "thrusterBoost", name: "Thruster Boost", desc: "+0.3 base speed per level", maxLvl: 15, baseCost: 800, costMult: 1.7, icon: "⚡", color: "#ffcc00", apply: (lvl) => {} },
+    { id: "magnetCore", name: "Magnet Core", desc: "+30 base magnet range per level", maxLvl: 15, baseCost: 400, costMult: 1.5, icon: "🧲", color: "#ff00ff", apply: (lvl) => {} },
+    { id: "critMatrix", name: "Crit Matrix", desc: "+3% base crit chance per level", maxLvl: 10, baseCost: 1500, costMult: 2.2, icon: "💥", color: "#ff0044", apply: (lvl) => {} },
+    { id: "shieldGen", name: "Shield Generator", desc: "Start with shield at level 5+", maxLvl: 5, baseCost: 5000, costMult: 3.0, icon: "🔰", color: "#00ff88", apply: (lvl) => {} },
+    { id: "coinProcessor", name: "Coin Processor", desc: "+15% coin drops per level", maxLvl: 10, baseCost: 2000, costMult: 2.0, icon: "💰", color: "#ffd700", apply: (lvl) => {} },
+    { id: "xpAmplifier", name: "XP Amplifier", desc: "+0.2x base XP multiplier per level", maxLvl: 10, baseCost: 1200, costMult: 2.0, icon: "📡", color: "#8800ff", apply: (lvl) => {} },
+    { id: "bulletForge", name: "Bullet Forge", desc: "+1 base bullet size per level", maxLvl: 10, baseCost: 1000, costMult: 1.8, icon: "🔫", color: "#ffaa00", apply: (lvl) => {} },
+    { id: "lifeSupport", name: "Life Support", desc: "Regen 1 HP every 20s at level 3+", maxLvl: 5, baseCost: 3000, costMult: 2.5, icon: "❤", color: "#ff4488", apply: (lvl) => {} }
+];
+function getTreeNodeCost(node, lvl) { return Math.floor(node.baseCost * Math.pow(node.costMult, lvl)); }
+function openCyberTree() { setPauseBtnVisibility(false); document.getElementById("menu").style.display = "none"; const ui = document.getElementById("cyberTreeUI"); ui.style.display = "flex"; shake += 15; renderCyberTree(); }
+function closeCyberTree() { document.getElementById("cyberTreeUI").style.display = "none"; showMenu(); }
+function renderCyberTree() { document.getElementById("treeBank").innerText = globalCoins; const container = document.getElementById("treeNodes"); container.innerHTML = ""; CYBER_TREE_NODES.forEach(node => { let lvl = cyberTreeData[node.id] || 0; let maxed = lvl >= node.maxLvl; let cost = maxed ? 0 : getTreeNodeCost(node, lvl); let canAfford = globalCoins >= cost && !maxed; let div = document.createElement("div"); div.style.cssText = `background:rgba(0,10,20,0.9); border:1px solid ${maxed ? '#0f0' : node.color}; padding:14px; width:160px; text-align:center; cursor:${canAfford ? 'pointer' : 'default'}; transition:all 0.2s; box-shadow:${maxed ? '0 0 15px rgba(0,255,0,0.3)' : `0 0 8px ${node.color}33`};`; 
+let progressBar = ''; for(let i = 0; i < node.maxLvl; i++) { progressBar += `<span style="display:inline-block; width:${Math.max(4, 120/node.maxLvl)}px; height:4px; background:${i < lvl ? node.color : 'rgba(255,255,255,0.1)'}; margin:0 1px;"></span>`; }
+div.innerHTML = `<div style="font-size:24px; margin-bottom:5px;">${node.icon}</div><div style="font-size:11px; font-weight:900; color:${node.color}; text-shadow:0 0 5px ${node.color}; letter-spacing:2px;">${node.name}</div><div style="font-size:8px; color:rgba(255,255,255,0.5); margin:5px 0; letter-spacing:1px;">${node.desc}</div><div style="margin:6px 0;">${progressBar}</div><div style="font-size:9px; color:rgba(255,255,255,0.4);">LVL ${lvl}/${node.maxLvl}</div><div style="font-size:12px; margin-top:6px; color:${maxed ? '#0f0' : (canAfford ? '#fff' : '#555')}; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px;">${maxed ? 'MAXED' : '💰' + cost.toLocaleString()}</div>`; 
+if(canAfford) { div.onmouseenter = () => { div.style.transform = 'scale(1.05)'; div.style.boxShadow = `0 0 20px ${node.color}66`; }; div.onmouseleave = () => { div.style.transform = 'scale(1)'; div.style.boxShadow = `0 0 8px ${node.color}33`; }; div.onclick = () => { globalCoins -= cost; cyberTreeData[node.id]++; shake += 8; playSound("level", 0.3); renderCyberTree(); }; } container.appendChild(div); }); }
+function applyCyberTreeBonuses() { permanentHPBonus = cyberTreeData.hullArmor * 3; if(cyberTreeData.shieldGen >= 5) shieldActive = true; if(cyberTreeData.lifeSupport >= 3) nanobotHeal = true; }
 function update(){
     shake = Math.min(shake, 50); if (shake > 0.1) { shake *= 0.92; } else { shake = 0; }
     if(gameOverActive){ ghostBullets.forEach(b => { b.x += b.vx; b.y += b.vy; if(b.x < 0) b.x = canvas.width; if(b.x > canvas.width) b.x = 0; if(b.y < 0) b.y = canvas.height; if(b.y > canvas.height) b.y = 0; }); if(Math.random() < 0.05) { let cx = Math.random() * canvas.width, cy = Math.random() * canvas.height; for(let i=0; i<12; i++){ let ang = (i / 12) * Math.PI * 2 + (Date.now() / 1000); ghostBullets.push({ x: cx, y: cy, vx: Math.cos(ang) * 2, vy: Math.sin(ang) * 2, size: 3 + Math.random() * 3, color: i % 2 === 0 ? "#400" : "#200" }); } } ghostBullets = ghostBullets.filter(b => ghostBullets.indexOf(b) < 300); return; }
     if(!gameRunning || paused) return; if (slowTimer > 0) { slowTimer--; timeScale = 0.3; } else { timeScale = 1; } frameCount += timeScale;
     player.x += leftStick.vx * player.speed * timeScale; player.y += leftStick.vy * player.speed * timeScale;
     if (Math.floor(frameCount) % 2 === 0) { player.trail.push({x: player.x, y: player.y}); if (player.trail.length > 8) player.trail.shift(); }
-    let configForUpdate = null; if (currentChapter === 1) configForUpdate = CHAPTER_1_DATA[currentStage]; if (currentChapter === 2) configForUpdate = CHAPTER_2_DATA[currentStage]; if (currentChapter === 3) configForUpdate = CHAPTER_3_DATA[currentStage];
+    let configForUpdate = ALL_CHAPTER_DATA[currentChapter] ? ALL_CHAPTER_DATA[currentChapter][currentStage] : null;
     if (!isEndless && configForUpdate && currentStage > 0) { stageTimer += timeScale; if (stageTimer >= 3600 && !bossActive) { if (currentStage === 5) spawnBoss(); else completeStage(); } }
     if(Math.floor(frameCount) % player.fireRate === 0 && rightStick.active){ let magnitude = Math.hypot(rightStick.vx, rightStick.vy); if (magnitude < 0.2) return; playSound("shoot", 0.15); let baseAngle = Math.atan2(rightStick.vy, rightStick.vx); rightStick.lastAngle = baseAngle; for(let i=0; i < multiShot; i++) { let offset = (i - (multiShot-1)/2) * 0.15; playerBullets.push({ x: player.x, y: player.y, prevX: player.x, prevY: player.y, vx: Math.cos(baseAngle + offset) * 12, vy: Math.sin(baseAngle + offset) * 12, size: player.bulletSize, pierce: pierceCount, hasBounced: false, targetsHit: [], trail: [] }); } }
     if(droneCount > 0) { let orbitAngle = (frameCount / 30); let droneInterval = Math.max(60 - (droneCount * 5), 20); if(Math.floor(frameCount) % droneInterval === 0) { let target = (bossActive && boss) ? boss : (enemies.length > 0 ? enemies[0] : null); if(target) { for(let d=0; d < droneCount; d++) { let dOrbitAngle = (frameCount / 30) + (d * (Math.PI * 2 / droneCount)); let dx = player.x + Math.cos(dOrbitAngle) * 60; let dy = player.y + Math.sin(dOrbitAngle) * 60; let angle = Math.atan2(target.y - dy, target.x - dx); for(let i = 0; i < 3; i++) { setTimeout(() => { if (!paused && gameRunning) { playerBullets.push({ x: dx, y: dy, prevX: dx, prevY: dy, vx: Math.cos(angle) * 14, vy: Math.sin(angle) * 14, size: 4, pierce: 1, isDroneBullet: true, hasBounced: false, targetsHit: [], trail: [] }); spawnParticles(dx, dy, "cyan", 1); playSound("shoot", 0.05); } }, i * 50); } } } } }
@@ -904,12 +1152,17 @@ enemies.forEach((e, ei) => {
         else if (e.type === "tesla") { e.x += Math.cos(angleToPlayer) * (e.speed * 0.3) * speedMult; e.y += Math.sin(angleToPlayer) * (e.speed * 0.3) * speedMult; if (Math.floor(frameCount) % 60 === 0) bullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, dx: Math.cos(angleToPlayer) * 6, dy: Math.sin(angleToPlayer) * 6, size: 4, trail: [] }); } 
         else if (e.type === "orbiter") { let spiralAngle = angleToPlayer + 0.5; e.x += Math.cos(spiralAngle) * e.speed * speedMult; e.y += Math.sin(spiralAngle) * e.speed * speedMult; } 
         else if (e.type === "nova") { let age = frameCount - e.spawnTime; if (age < 120) { e.x += Math.cos(angleToPlayer) * e.speed * speedMult; e.y += Math.sin(angleToPlayer) * e.speed * speedMult; } else if (age >= 120) { for (let i = 0; i < 12; i++) { let a = (i / 12) * Math.PI * 2; bullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, dx: Math.cos(a) * 3, dy: Math.sin(a) * 3, size: 5, trail: [] }); } spawnParticles(e.x, e.y, "#a0f", 10); enemies.splice(ei, 1); } } 
+        else if (e.type === "bomber") { e.x += Math.cos(angleToPlayer) * (e.speed * 0.6) * speedMult; e.y += Math.sin(angleToPlayer) * (e.speed * 0.6) * speedMult; if (Math.hypot(e.x - player.x, e.y - player.y) < 150) { for (let i = 0; i < 8; i++) { let a = (i / 8) * Math.PI * 2; bullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, dx: Math.cos(a) * 4, dy: Math.sin(a) * 4, size: 6, trail: [] }); } spawnParticles(e.x, e.y, "#ff6600", 15); enemies.splice(ei, 1); return; } }
+        else if (e.type === "phaser") { let phase = Math.sin(frameCount * 0.05 + e.spawnTime) > 0; e.phaseVisible = phase; if (phase) { e.x += Math.cos(angleToPlayer) * e.speed * 1.5 * speedMult; e.y += Math.sin(angleToPlayer) * e.speed * 1.5 * speedMult; } }
+        else if (e.type === "shielder") { e.x += Math.cos(angleToPlayer) * (e.speed * 0.7) * speedMult; e.y += Math.sin(angleToPlayer) * (e.speed * 0.7) * speedMult; }
+        else if (e.type === "splitter") { e.x += Math.cos(angleToPlayer) * e.speed * speedMult; e.y += Math.sin(angleToPlayer) * e.speed * speedMult; }
+        else if (e.type === "reaper") { let dashDist = Math.hypot(e.x - player.x, e.y - player.y); if (dashDist < 200 && frameCount - e.lastAction > 90) { e.x += Math.cos(angleToPlayer) * 80; e.y += Math.sin(angleToPlayer) * 80; e.lastAction = frameCount; spawnParticles(e.x, e.y, "#ff0044", 8); } else { e.x += Math.cos(angleToPlayer) * (e.speed * 0.5) * speedMult; e.y += Math.sin(angleToPlayer) * (e.speed * 0.5) * speedMult; } }
         else { e.x += Math.cos(angleToPlayer) * e.speed * speedMult; e.y += Math.sin(angleToPlayer) * e.speed * speedMult; }
         if (e.type === "scout" && Math.floor(frameCount) % 120 === 0) { bullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, dx: Math.cos(angleToPlayer) * 4, dy: Math.sin(angleToPlayer) * 4, size: 6, trail: [] }); }
         if(teslaAura && Math.floor(frameCount) % 10 === 0 && Math.hypot(e.x - player.x, e.y - player.y) < 120) { e.hp -= 2; spawnParticles(e.x, e.y, "cyan", 2); if(e.hp <= 0) { gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.2}); enemies.splice(ei, 1); playSound("hit", 0.1); } }
         if(Math.hypot(e.x - player.x, e.y - player.y) < player.hitbox + e.size){ if(shieldActive) { shieldActive = false; enemies.splice(ei, 1); playSound("hit", 0.4); } else { player.health -= 2; shake += 15; hitFlash = 0.8; spawnParticles(player.x, player.y, "white"); enemies.splice(ei, 1); playSound("hit", 0.3); checkGameOver(); } }
     });if(boss){ boss.angle += 0.04 * timeScale; let isPhase2 = boss.hp < (boss.maxHp / 2); if (Math.floor(frameCount) % 5 === 0) { boss.trail = boss.trail || []; boss.trail.push({x: boss.x, y: boss.y}); if (boss.trail.length > 6) boss.trail.shift(); } if (currentChapter === 3) { if (!isPhase2) { if (Math.floor(frameCount) % 45 === 0) { let toPlayer = Math.atan2(player.y - boss.y, player.x - boss.x); for (let i = -1; i <= 1; i++) { bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(toPlayer + i*0.4) * 6, dy: Math.sin(toPlayer + i*0.4) * 6, size: 10, trail: [] }); } } if (Math.floor(frameCount) % 120 === 0) { for (let i = 0; i < 16; i++) { let a = (i/16) * Math.PI * 2; bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * 5, dy: Math.sin(a) * 5, size: 7, trail: [] }); } } } else { boss.x += Math.cos(boss.angle * 2) * 8 * timeScale; boss.y += Math.sin(boss.angle * 2) * 4 * timeScale; if (Math.floor(frameCount) % 4 === 0) { let a = boss.angle * 5; bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * 8, dy: Math.sin(a) * 8, size: 5, trail: [] }); } } } else { if(isPhase2) { let bossAngle = Math.atan2(player.y - boss.y, player.x - boss.x); boss.x += Math.cos(bossAngle) * 3 * timeScale; boss.y += Math.sin(bossAngle) * 3 * timeScale; } let shotCooldown = isPhase2 ? 7 : 10; if(Math.floor(frameCount) % shotCooldown === 0){ for(let i=0; i<8; i++){ let a = boss.angle + (i * Math.PI/4); bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * (isPhase2 ? 7 : 5), dy: Math.sin(a) * (isPhase2 ? 7 : 5), size: 8, trail: [] }); } } } }
-    gems = gems.filter(g => { let dist = Math.hypot(player.x - g.x, player.y - g.y); if(dist < magnetRange) { let angle = Math.atan2(player.y - g.y, player.x - g.x); g.x += Math.cos(angle) * 8 * timeScale; g.y += Math.sin(angle) * 8 * timeScale; } if(dist < 30) { if(g.isCoin) { globalCoins += 10; currentRunCoins += 10; playSound("coin", 0.2); } else { xp += expMultiplier; } if(xp >= level * 4) levelUp(); return false; } return true; });
+    gems = gems.filter(g => { let dist = Math.hypot(player.x - g.x, player.y - g.y); if(dist < magnetRange) { let angle = Math.atan2(player.y - g.y, player.x - g.x); g.x += Math.cos(angle) * 8 * timeScale; g.y += Math.sin(angle) * 8 * timeScale; } if(dist < 30) { if(g.isCoin) { let coinBonus = 1 + (cyberTreeData.coinProcessor * 0.15); let coinAmt = Math.floor(10 * coinBonus); globalCoins += coinAmt; currentRunCoins += coinAmt; playSound("coin", 0.2); } else { xp += expMultiplier; } if(xp >= level * 4) levelUp(); return false; } return true; });
     particles.forEach(p => { p.x += p.vx * timeScale; p.y += p.vy * timeScale; p.life -= 0.02 * timeScale; }); 
     particles = particles.filter(p => p.life > 0);
 
@@ -921,7 +1174,14 @@ enemies.forEach((e, ei) => {
             superNovaCounter = 0;
         }
     }
-    playerBullets.forEach((b, bi) => { enemies.forEach((e, ei) => { if(!b.targetsHit.includes(e) && Math.hypot(b.x-e.x, b.y-e.y) < (e.size + b.size)){ let isCrit = Math.random() < critChance; e.hp -= (isCrit ? 5 : 1); playSound("hit", 0.1); if(chainShot && !b.isChained) { let nextTarget = null; let minDist = 300; enemies.forEach(nextE => { if(nextE !== e) { let d = Math.hypot(e.x - nextE.x, e.y - nextE.y); if(d < minDist) { minDist = d; nextTarget = nextE; } } }); if(nextTarget) { ctx.beginPath(); ctx.strokeStyle = "lime"; ctx.lineWidth = 2; ctx.moveTo(e.x, e.y); ctx.lineTo(nextTarget.x, nextTarget.y); ctx.stroke(); let angle = Math.atan2(nextTarget.y - e.y, nextTarget.x - e.x); playerBullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15, size: b.size * 0.8, pierce: 1, isChained: true, targetsHit: [e], trail: [] }); spawnParticles(e.x, e.y, "lime", 5); } } if(Math.random() < vampirism) player.health = Math.min(player.health + 1, player.maxHealth); if(frostShot) e.frozen = 120; spawnParticles(e.x, e.y, isCrit ? "red" : (b.isDroneBullet ? "cyan" : "#a0f")); b.targetsHit.push(e); b.pierce--; if(e.hp <= 0){ gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.2}); enemies.splice(enemies.indexOf(e), 1); } } }); if(boss && !b.targetsHit.includes(boss) && Math.hypot(b.x - boss.x, b.y - boss.y) < (40 + b.size)){ boss.hp--; playSound("hit", 0.2); spawnParticles(b.x, b.y, b.isDroneBullet ? "cyan" : "orange"); b.targetsHit.push(boss); b.pierce--; if(boss.hp <= 0){ slowTimer = 40; hitFlash = 1.5; spawnShockwave(boss.x, boss.y); shake += 30; playSound("level", 0.6); for (let i = 0; i < 50; i++) spawnParticles(boss.x, boss.y, "orange", 1); if (level >= 70) { ALL_UPGRADES.legendary.find(u => u.name === "Hyper-Drive").e(); customAlert("LEVEL 70 BOSS DEFEATED: HYPER-DRIVE ACTIVATED!"); } boss = null; bossActive = false; let bonus = currentChapter === 1 ? 200 : (currentChapter === 2 ? 500 : 1000); gems.forEach(g => { g.x = player.x; g.y = player.y; }); if (!isEndless && currentStage === 5) { paused = true; customAlert(`CHAPTER ${currentChapter} CLEAR! (+${bonus} Bonus Coins)`, () => { globalCoins += bonus; backToMenuFromPause(); }); } else { levelUp(); } } } });
+    if (homingActive) { playerBullets.forEach(b => { if (b.isDroneBullet || b.isChained) return; let closest = null, minD = 400; enemies.forEach(e => { let d = Math.hypot(e.x - b.x, e.y - b.y); if (d < minD) { minD = d; closest = e; } }); if (boss && Math.hypot(boss.x - b.x, boss.y - b.y) < minD) closest = boss; if (closest) { let target = closest; let desired = Math.atan2(target.y - b.y, target.x - b.x); let current = Math.atan2(b.vy, b.vx); let diff = desired - current; while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2; let turnRate = 0.06; current += diff * turnRate; let spd = Math.hypot(b.vx, b.vy); b.vx = Math.cos(current) * spd; b.vy = Math.sin(current) * spd; } }); }
+    if (plasmaFieldActive && Math.floor(frameCount) % 30 === 0) { enemies.forEach(e => { if (Math.hypot(e.x - player.x, e.y - player.y) < 180) { e.hp -= 1; spawnParticles(e.x, e.y, "#ff00ff", 2); } }); }
+    if (gravWellActive && Math.floor(frameCount) % 15 === 0) { enemies.forEach(e => { let d = Math.hypot(e.x - player.x, e.y - player.y); if (d < 300 && d > 80) { let a = Math.atan2(player.y - e.y, player.x - e.x); e.x += Math.cos(a) * 2; e.y += Math.sin(a) * 2; } }); }
+    if (nanobotHeal && Math.floor(frameCount) % 300 === 0 && player.health < player.maxHealth) { player.health = Math.min(player.health + 1, player.maxHealth); spawnParticles(player.x, player.y, "#0f0", 5); }
+    if (deathMarkActive) { enemies.forEach(e => { if (e.hp <= 2 && e.hp > 0) { e.hp = 0; spawnParticles(e.x, e.y, "#ff0044", 8); gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.3}); } }); enemies = enemies.filter(e => e.hp > 0); }
+    if (orbitalStrikeActive && Math.floor(frameCount) % 240 === 0 && enemies.length > 0) { let target = enemies[Math.floor(Math.random() * enemies.length)]; spawnShockwave(target.x, target.y); shake += 15; enemies.forEach(e => { if (Math.hypot(e.x - target.x, e.y - target.y) < 150) { e.hp -= 10; spawnParticles(e.x, e.y, "#ffcc00", 10); } }); enemies = enemies.filter(e => e.hp > 0); playSound("hit", 0.5); }
+    if (shadowCloneActive && Math.floor(frameCount) % player.fireRate === 0 && rightStick.active) { let cloneAngle = Math.atan2(rightStick.vy, rightStick.vx) + Math.PI; playerBullets.push({ x: player.x, y: player.y, prevX: player.x, prevY: player.y, vx: Math.cos(cloneAngle) * 10, vy: Math.sin(cloneAngle) * 10, size: player.bulletSize * 0.7, pierce: 1, hasBounced: false, targetsHit: [], trail: [], isClone: true }); }
+    playerBullets.forEach((b, bi) => { enemies.forEach((e, ei) => { if(e.type === "phaser" && !e.phaseVisible) return; if(!b.targetsHit.includes(e) && Math.hypot(b.x-e.x, b.y-e.y) < (e.size + b.size)){ if(e.type === "shielder" && e.shieldHp > 0) { e.shieldHp--; spawnParticles(e.x, e.y, "#00ccff", 5); b.targetsHit.push(e); b.pierce--; playSound("hit", 0.1); return; } let isCrit = Math.random() < critChance; e.hp -= (isCrit ? 5 : 1); playSound("hit", 0.1); if(chainShot && !b.isChained) { let nextTarget = null; let minDist = 300; enemies.forEach(nextE => { if(nextE !== e) { let d = Math.hypot(e.x - nextE.x, e.y - nextE.y); if(d < minDist) { minDist = d; nextTarget = nextE; } } }); if(nextTarget) { ctx.beginPath(); ctx.strokeStyle = "lime"; ctx.lineWidth = 2; ctx.moveTo(e.x, e.y); ctx.lineTo(nextTarget.x, nextTarget.y); ctx.stroke(); let angle = Math.atan2(nextTarget.y - e.y, nextTarget.x - e.x); playerBullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15, size: b.size * 0.8, pierce: 1, isChained: true, targetsHit: [e], trail: [] }); spawnParticles(e.x, e.y, "lime", 5); } } if(Math.random() < vampirism) player.health = Math.min(player.health + 1, player.maxHealth); if(frostShot) e.frozen = 120; spawnParticles(e.x, e.y, isCrit ? "red" : (b.isDroneBullet ? "cyan" : "#a0f")); b.targetsHit.push(e); b.pierce--; if(e.hp <= 0){ gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.2}); if(e.type === "splitter") { for(let s = 0; s < 2; s++) { let sAngle = Math.random() * Math.PI * 2; enemies.push({ x: e.x + Math.cos(sAngle) * 20, y: e.y + Math.sin(sAngle) * 20, hp: Math.max(1, Math.floor(e.hp / 2) + 2), speed: e.speed * 1.3, size: 10, type: "normal", spawnTime: frameCount, lastAction: frameCount, frozen: 0, trail: [], shieldHp: 0 }); } } enemies.splice(enemies.indexOf(e), 1); } } }); if(boss && !b.targetsHit.includes(boss) && Math.hypot(b.x - boss.x, b.y - boss.y) < (40 + b.size)){ boss.hp--; playSound("hit", 0.2); spawnParticles(b.x, b.y, b.isDroneBullet ? "cyan" : "orange"); b.targetsHit.push(boss); b.pierce--; if(boss.hp <= 0){ slowTimer = 40; hitFlash = 1.5; spawnShockwave(boss.x, boss.y); shake += 30; playSound("level", 0.6); for (let i = 0; i < 50; i++) spawnParticles(boss.x, boss.y, "orange", 1); if (level >= 70) { ALL_UPGRADES.legendary.find(u => u.name === "Hyper-Drive").e(); customAlert("LEVEL 70 BOSS DEFEATED: HYPER-DRIVE ACTIVATED!"); } boss = null; bossActive = false; let bonus = [0, 200, 500, 1000, 2000, 3500, 5000, 7500, 10000, 15000, 25000][currentChapter] || 1000; gems.forEach(g => { g.x = player.x; g.y = player.y; }); if (!isEndless && currentStage === 5) { paused = true; customAlert(`CHAPTER ${currentChapter} CLEAR! (+${bonus} Bonus Coins)`, () => { globalCoins += bonus; backToMenuFromPause(); }); } else { levelUp(); } } } });
 }
 function levelUp(){ level++; xp = 0; playSound("level", 0.4); gems.forEach(g => { g.x = player.x; g.y = player.y; }); if (isEndless && level % 10 === 0 && !bossActive) spawnBoss(); showUpgrades(); }
 function showUpgrades() { slowTimer = 60; shake += 20; spawnShockwave(player.x, player.y); const mode = isEndless ? "ENDLESS_MODE" : `STG_${currentChapter}.${currentStage}`; const informer = document.getElementById("stage-info-banner"); informer.innerHTML = `[${VERSION_ID}] STATUS: ${mode} // ERR_COUNT: ${errCount} // SELECT_MOD...`; setTimeout(() => { paused = true; let ui = document.getElementById("upgradeUI"); let projector = document.getElementById("cards"); projector.innerHTML = ""; ui.style.display = "flex"; let choices = []; let sawEpicThisTime = false; for (let i = 0; i < 3; i++) { let roll = Math.random(), rarity = "common"; if (roll < 0.05) { rarity = "legendary"; } else if (roll < 0.20 || (pityCounter >= 5 && !sawEpicThisTime)) { rarity = "epic"; sawEpicThisTime = true; pityCounter = 0; } else if (roll < 0.50) { rarity = "rare"; } let selectedList = ALL_UPGRADES[rarity]; if (rarity === "legendary") { selectedList = selectedList.filter(up => { if (up.name === "Hyper-Drive" && level < 70) return false; if (up.name === "Super Nova" && superNovaStacks >= 10) return false; return true; }); if (selectedList.length === 0) { rarity = "epic"; selectedList = ALL_UPGRADES[rarity]; } } let up = selectedList[Math.floor(Math.random() * selectedList.length)]; if (choices.some(c => c.name === up.name)) { i--; continue; } choices.push({ ...up, r: rarity }); } if (!sawEpicThisTime) pityCounter++; choices.forEach((up, index) => {
@@ -1137,7 +1397,7 @@ const HUD = { draw(ctx, player, level, xp, globalCoins, currentChapter, currentS
 };
 function draw(){
     if(gameOverActive){ ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#050000"; ctx.fillRect(0,0,canvas.width,canvas.height); for(let i=0; i<100; i++) { ctx.fillStyle = `rgba(255,0,0,${Math.random()*0.1})`; ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2); } ghostBullets.forEach(b => { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill(); }); return; }
-    let configForDraw = null; if (currentChapter === 1) configForDraw = CHAPTER_1_DATA[currentStage]; if (currentChapter === 2) configForDraw = CHAPTER_2_DATA[currentStage]; if (currentChapter === 3) configForDraw = CHAPTER_3_DATA[currentStage];
+    let configForDraw = ALL_CHAPTER_DATA[currentChapter] ? ALL_CHAPTER_DATA[currentChapter][currentStage] : null;
     ctx.setTransform(1, 0, 0, 1, 0, 0); let baseCol = configForDraw ? configForDraw.bgColor : (isEndless ? "#050010" : "black"); ctx.fillStyle = baseCol; ctx.fillRect(0, 0, canvas.width, canvas.height);
     gridPulse = Math.sin(frameCount * 0.05) * 5; layers.forEach(layer => { ctx.save(); ctx.strokeStyle = layer.color; ctx.lineWidth = 1; let offX = (-player.x * layer.speed) % layer.size; let offY = (-player.y * layer.speed) % layer.size; ctx.beginPath(); for (let x = offX; x < canvas.width; x += layer.size) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); } for (let y = offY; y < canvas.height; y += layer.size) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); } ctx.stroke(); ctx.restore(); });
     if(!gameRunning && !paused) return; ctx.save(); let currentShake = shake; if (hitFlash > 0.1) currentShake += (hitFlash * 5); let sx = 0, sy = 0; if (currentShake > 0) { sx = (Math.random() - 0.5) * currentShake; sy = (Math.random() - 0.5) * currentShake; } ctx.translate(canvas.width / 2 - player.x + sx, canvas.height / 2 - player.y + sy); if (shake > 0) { shake *= 0.90; if (shake < 0.1) shake = 0; }
@@ -1154,10 +1414,13 @@ function draw(){
     if(teslaAura) { ctx.beginPath(); ctx.arc(player.x, player.y, 120, 0, Math.PI*2); ctx.strokeStyle = `rgba(0,255,255,${0.1 + Math.random()*0.2})`; ctx.lineWidth = 2; ctx.stroke(); }
     if (player.trail.length > 1) { ctx.beginPath(); ctx.strokeStyle = "rgba(0, 255, 255, 0.4)"; ctx.lineWidth = player.hitbox * 2; ctx.lineCap = 'round'; for(let i = 1; i < player.trail.length; i++) { ctx.globalAlpha = i / player.trail.length; ctx.beginPath(); ctx.moveTo(player.trail[i-1].x, player.trail[i-1].y); ctx.lineTo(player.trail[i].x, player.trail[i].y); ctx.stroke(); } ctx.globalAlpha = 1.0; }
     if (droneCount > 0) { for (let d = 0; d < droneCount; d++) { let orbitAngle = (frameCount / 30) + (d * (Math.PI * 2 / droneCount)); let dx = player.x + Math.cos(orbitAngle) * 60; let dy = player.y + Math.sin(orbitAngle) * 60; ctx.beginPath(); ctx.strokeStyle = "rgba(0, 255, 255, 0.15)"; ctx.setLineDash([5, 5]); ctx.moveTo(player.x, player.y); ctx.lineTo(dx, dy); ctx.stroke(); ctx.setLineDash([]); drawNeonCircle(dx, dy, 6, "cyan"); } }
+    if (plasmaFieldActive) { ctx.save(); ctx.globalAlpha = 0.08 + Math.sin(frameCount * 0.05) * 0.04; let pfGrad = ctx.createRadialGradient(player.x, player.y, 20, player.x, player.y, 180); pfGrad.addColorStop(0, '#ff00ff'); pfGrad.addColorStop(1, 'transparent'); ctx.fillStyle = pfGrad; ctx.beginPath(); ctx.arc(player.x, player.y, 180, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+    if (gravWellActive) { ctx.save(); ctx.globalAlpha = 0.06; ctx.strokeStyle = '#8800ff'; ctx.lineWidth = 1; for(let r = 80; r < 300; r += 40) { ctx.beginPath(); ctx.arc(player.x, player.y, r + Math.sin(frameCount*0.03+r)*5, 0, Math.PI*2); ctx.stroke(); } ctx.restore(); }
     drawCyberPlane(player.x, player.y, rightStick.lastAngle || -Math.PI/2);
     ProjectileManager.drawProjectiles(bullets, "#ff0044"); ProjectileManager.drawProjectiles(playerBullets.filter(b => !b.isDroneBullet), "#ffff00"); ProjectileManager.drawProjectiles(playerBullets.filter(b => b.isDroneBullet), "#00ffff");
     enemies.forEach(e => { 
-    let eColor = e.frozen > 0 ? "cyan" : (e.type === "blinker" ? "#a0f" : (e.type === "tesla" ? "#0f0" : (e.type === "scout" ? "#f44" : (e.type === "asteroid" ? "#666" : (e.type === "nova" ? "#a0f" : "#88f"))))); 
+    let eColor = e.frozen > 0 ? "cyan" : (e.type === "blinker" ? "#a0f" : (e.type === "tesla" ? "#0f0" : (e.type === "scout" ? "#f44" : (e.type === "asteroid" ? "#666" : (e.type === "nova" ? "#a0f" : (e.type === "bomber" ? "#ff6600" : (e.type === "phaser" ? "#00ffcc" : (e.type === "shielder" ? "#00ccff" : (e.type === "splitter" ? "#ffcc00" : (e.type === "reaper" ? "#ff0044" : "#88f")))))))))); 
+    if (e.type === "phaser" && !e.phaseVisible) { ctx.globalAlpha = 0.15; }
     if (e.trail && e.trail.length > 1) { 
         ctx.strokeStyle = eColor; 
         ctx.lineWidth = e.size * 0.5; 
@@ -1170,7 +1433,9 @@ function draw(){
         } 
         ctx.globalAlpha = 1.0; 
     } 
-    drawEvilRobot(e, eColor); 
+    drawEvilRobot(e, eColor);
+    if (e.type === "shielder" && e.shieldHp > 0) { ctx.save(); ctx.strokeStyle = "#00ccff"; ctx.lineWidth = 2; ctx.globalAlpha = 0.5 + Math.sin(Date.now()/200) * 0.3; ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+    if (e.type === "phaser") { ctx.globalAlpha = 1.0; }
 });
     if(boss){ 
     let isPhase2 = boss.hp < (boss.maxHp / 2); 
