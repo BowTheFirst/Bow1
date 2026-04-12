@@ -1433,7 +1433,7 @@ function showMenu() {
     document.getElementById("pauseOverlay").style.display = "none"; 
     setPauseBtnVisibility(false); 
 }
-function resetGame() { initPlayer(); bullets = []; enemies = []; playerBullets = []; particles = []; gems = []; boss = null; level = 1; xp = 0; bossActive = false; frameCount = 0; stageTimer = 0; hitFlash = 0; shockwaves = []; gameOverActive = false; ghostBullets = []; shake = 0; }
+function resetGame() { initPlayer(); bullets = []; enemies = []; playerBullets = []; particles = []; gems = []; boss = null; level = 1; xp = 0; bossActive = false; frameCount = 0; stageTimer = 0; hitFlash = 0; shockwaves = []; gameOverActive = false; ghostBullets = []; shake = 0; mythicSkinBuffs.singularity.autoShieldTimer = 0; mythicSkinBuffs.omega.extraLife = false; mythicSkinBuffs.omega.freeEpic = false; }
 function restartCurrent() { resetGame(); startGame(); }
 function togglePause() { if (!gameRunning) return; paused = !paused; document.getElementById("pauseBtn").innerText = paused ? "RESUME" : "PAUSE"; document.getElementById("pauseOverlay").style.display = paused ? "flex" : "none"; setPauseBtnVisibility(true); playSound("click", 0.2); }
 function backToMenuFromPause() { paused = false; gameRunning = false; resetGame(); showMenu(); }
