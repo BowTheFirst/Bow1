@@ -50,8 +50,7 @@ canvas {
     #gameOver { display: none; }
     #pauseOverlay, #devUI, #shopUI { background: radial-gradient(circle, #111, #000); }
     #gameOver, #menu { background: radial-gradient(circle, #200 0%, #000 100%); }
-    #upgradeUI { background: radial-gradient(circle at center, rgba(0, 8, 20, 0.4) 0%, rgba(0, 0, 0, 0.98) 100%); backdrop-filter: blur(10px); animation: virusBgPulse 2s infinite alternate; overflow: visible; }
-    @keyframes virusBgPulse { from { background-color: #000; } to { background-color: #1a0000; } }
+    #upgradeUI { background: radial-gradient(circle at center, rgba(0, 8, 20, 0.4) 0%, rgba(0, 0, 0, 0.98) 100%); backdrop-filter: blur(10px); overflow: visible; }
     .system-header { position: absolute; top: 5%; width: 100%; height: 100px; background: transparent; display: flex; justify-content: center; align-items: center; z-index: 5; }
     .tactical-frame { position: relative; width: 600px; padding: 15px; background: rgba(255, 0, 68, 0.05); border-left: 4px solid #f04; border-right: 4px solid #f04; display: flex; flex-direction: column; align-items: center; clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%); }
     .tactical-frame::before, .tactical-frame::after { content: ''; position: absolute; width: 20px; height: 100%; border: 2px solid #f04; animation: bracketPulse 0.8s infinite ease-in-out; }
@@ -146,6 +145,13 @@ canvas {
     .card.legendary { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 100px rgba(255, 150, 0, 0.3); color: #fff; }
     .legendary .rarity-tag { color: gold; background: rgba(255, 215, 0, 0.15); border-bottom-color: gold; }
     .legendary .up-name { color: gold !important; text-shadow: 0 0 15px gold; }
+    #cards .card.mythic { background: linear-gradient(135deg, rgba(20, 0, 40, 0.98) 0%, rgba(0, 0, 20, 0.99) 40%, rgba(30, 0, 10, 0.98) 100%); border: 2px solid rgba(255, 0, 255, 0.8); animation: cardHoloPopIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, mythicFlicker 2s infinite alternate, floatingHolo 4s infinite ease-in-out; transform-style: preserve-3d; isolation: isolate; }
+    #cards .card.mythic::before { content: ''; position: absolute; inset: -6px; background: conic-gradient(from var(--holo-angle, 0deg) at 50% 50%, #ff00ff, #00ffff, #ff0066, #ffcc00, #00ff88, #8800ff, #ff00ff); filter: blur(22px); opacity: 0.9; z-index: -1; animation: holoHaloSpin 3s linear infinite; border-radius: 2px; }
+    @keyframes mythicFlicker { 0% { filter: brightness(1.0) saturate(1.2); } 25% { filter: brightness(1.3) saturate(2.0); } 50% { filter: brightness(1.1) saturate(1.5) hue-rotate(30deg); } 75% { filter: brightness(1.4) saturate(2.2) hue-rotate(-20deg); } 100% { filter: brightness(1.2) saturate(1.8); } }
+    .card.mythic { box-shadow: 0 0 60px rgba(255, 0, 255, 0.9), 0 0 120px rgba(0, 255, 255, 0.4), 0 0 30px rgba(255, 215, 0, 0.3); color: #fff; }
+    .mythic .rarity-tag { color: #ff00ff; background: linear-gradient(90deg, rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2)); border-bottom-color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
+    .mythic .up-name { color: #ff00ff !important; text-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff; }
+    .card-desc { font-size: 9px; color: rgba(255,255,255,0.6); text-align: center; margin: 0 10px 5px; line-height: 1.3; z-index: 8; position: relative; letter-spacing: 0.5px; text-transform: none; }
     .up-name { font-size: 18px; font-weight: 900; text-shadow: 0 0 10px currentColor; margin: 20px 10px; text-align: center; color: cyan; animation: textFlicker 0.05s infinite; z-index: 8; position: relative; }
     @keyframes textFlicker { 0% { opacity: 1; transform: translateX(0); } 50% { opacity: 0.8; transform: translateX(0.5px); } 100% { opacity: 0.9; transform: translateX(-0.5px); } }
     .execute-up { margin-top: auto; margin-bottom: 20px; font-size: 12px; color: #0f0; text-shadow: 0 0 10px #0f0; animation: cybertextFlash 0.3s infinite alternate; z-index: 8; position: relative; }
@@ -382,15 +388,14 @@ let globalCoins = 0, hasNuke = false, hasMedkit = false, permanentHPBonus = 0; l
 function drawGlowyEntity(x, y, radius, color, glowIntensity = 15) { ctx.save(); ctx.shadowBlur = glowIntensity; ctx.shadowColor = color; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x, y, radius * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
 
 function drawCyberPlane(x, y, angle) {
-    if (activeSkin === "phantom") { drawPhantomPlane(x, y, angle); return; }
-    if (activeSkin === "inferno") { drawInfernoPlane(x, y, angle); return; }
-    if (activeSkin === "viper") { drawViperPlane(x, y, angle); return; }
-    if (activeSkin === "ghost") { drawGhostPlane(x, y, angle); return; }
-    if (activeSkin === "solar") { drawSolarPlane(x, y, angle); return; }
-    if (activeSkin === "nebula") { drawNebulaPlane(x, y, angle); return; }
-    if (activeSkin === "void") { drawVoidPlane(x, y, angle); return; }
-    if (activeSkin === "quantum") { drawQuantumPlane(x, y, angle); return; }
-    if (activeSkin === "celestial") { drawCelestialPlane(x, y, angle); return; }
+    const skinRenderers = {
+        phantom: drawPhantomPlane, inferno: drawInfernoPlane, viper: drawViperPlane, ghost: drawGhostPlane,
+        solar: drawSolarPlane, nebula: drawNebulaPlane, void: drawVoidPlane, quantum: drawQuantumPlane, celestial: drawCelestialPlane,
+        rust: drawRustPlane, neon: drawNeonPlane, crimson: drawCrimsonPlane, frost: drawFrostPlane, pulse: drawPulsePlane,
+        toxic: drawToxicPlane, storm: drawStormPlane, obsidian: drawObsidianPlane, chrome: drawChromePlane, aurora: drawAuroraPlane,
+        singularity: drawSingularityPlane, ethereal: drawEtherealPlane, omega: drawOmegaPlane
+    };
+    if (skinRenderers[activeSkin]) { skinRenderers[activeSkin](x, y, angle); return; }
     ctx.save(); 
     ctx.translate(x, y); 
     ctx.rotate(angle + Math.PI/2);
@@ -932,6 +937,309 @@ function drawCelestialPlane(x, y, angle) {
     }
     ctx.restore();
 }
+// ===== 10 CHEAPER SKINS (below 60k) =====
+function drawRustPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let hullGrad = ctx.createLinearGradient(0, -18, 0, 15);
+    hullGrad.addColorStop(0, '#8B4513'); hullGrad.addColorStop(0.5, '#A0522D'); hullGrad.addColorStop(1, '#654321');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(-10, 10); ctx.lineTo(0, 6); ctx.lineTo(10, 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#CD853F'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#DEB887'; ctx.globalAlpha = 0.3;
+    for(let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc((Math.random()-0.5)*12, (Math.random()-0.5)*15, 2+Math.random()*2, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1; ctx.fillStyle = '#ff6600'; ctx.beginPath(); ctx.arc(0, -6, 3, 0, Math.PI*2); ctx.fill();
+    let eGrad = ctx.createLinearGradient(0, 10, 0, 20);
+    eGrad.addColorStop(0, '#ff4400'); eGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eGrad; ctx.beginPath(); ctx.moveTo(-3, 10); ctx.lineTo(0, 18+Math.random()*4); ctx.lineTo(3, 10); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawNeonPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    ctx.fillStyle = 'rgba(0,20,0,0.8)';
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-12, 10); ctx.lineTo(0, 6); ctx.lineTo(12, 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = `hsl(${(t*60)%360}, 100%, 50%)`; ctx.lineWidth = 2; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 15;
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-12, 10); ctx.lineTo(0, 6); ctx.lineTo(12, 10); ctx.closePath(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#0f0'; ctx.beginPath(); ctx.arc(0, -6, 3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `hsl(${(t*60)%360}, 100%, 50%)`; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.moveTo(-3, 10); ctx.lineTo(0, 22+Math.random()*3); ctx.lineTo(3, 10); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawCrimsonPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let hullGrad = ctx.createLinearGradient(0, -20, 0, 14);
+    hullGrad.addColorStop(0, '#8B0000'); hullGrad.addColorStop(0.5, '#CC0000'); hullGrad.addColorStop(1, '#4a0000');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-13, 8); ctx.lineTo(-8, 14); ctx.lineTo(0, 10); ctx.lineTo(8, 14); ctx.lineTo(13, 8); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#ff3333'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#ff0000'; ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(0, -8, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ff2200'; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(0, 24+Math.random()*5); ctx.lineTo(4, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawFrostPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    let hullGrad = ctx.createLinearGradient(0, -20, 0, 14);
+    hullGrad.addColorStop(0, '#E0FFFF'); hullGrad.addColorStop(0.5, '#87CEEB'); hullGrad.addColorStop(1, '#4682B4');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-12, 8); ctx.lineTo(-6, 14); ctx.lineTo(0, 10); ctx.lineTo(6, 14); ctx.lineTo(12, 8); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 1.5; ctx.stroke();
+    for(let i = 0; i < 3; i++) { ctx.globalAlpha = 0.3 + Math.sin(t*3+i)*0.2;
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(Math.sin(t+i*2)*8, -5+Math.cos(t*1.5+i)*8, 1+Math.random(), 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1; ctx.fillStyle = '#00BFFF'; ctx.shadowColor = '#00BFFF'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, -8, 3.5, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    let eGrad = ctx.createLinearGradient(0, 12, 0, 25);
+    eGrad.addColorStop(0, '#87CEEB'); eGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eGrad; ctx.beginPath(); ctx.moveTo(-3, 12); ctx.lineTo(0, 23+Math.random()*3); ctx.lineTo(3, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawPulsePlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000; let pulse = 0.7 + Math.sin(t*6)*0.3;
+    ctx.globalAlpha = 0.15; let auraGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 25*pulse);
+    auraGrad.addColorStop(0, '#00ff88'); auraGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = auraGrad; ctx.beginPath(); ctx.arc(0, 0, 25*pulse, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    let hullGrad = ctx.createLinearGradient(0, -20, 0, 14);
+    hullGrad.addColorStop(0, '#004400'); hullGrad.addColorStop(0.5, `rgba(0,${Math.floor(180+70*pulse)},80,1)`); hullGrad.addColorStop(1, '#002200');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-11, 8); ctx.lineTo(0, 14); ctx.lineTo(11, 8); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1.5; ctx.globalAlpha = pulse; ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#00ff88'; ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 10*pulse;
+    ctx.beginPath(); ctx.arc(0, -6, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#00ff44'; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.moveTo(-3, 12); ctx.lineTo(0, 22+Math.random()*4); ctx.lineTo(3, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawToxicPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    let hullGrad = ctx.createLinearGradient(0, -20, 0, 16);
+    hullGrad.addColorStop(0, '#2d4a1e'); hullGrad.addColorStop(0.5, '#3a6b2a'); hullGrad.addColorStop(1, '#1a3010');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(-13, 6); ctx.lineTo(-8, 16); ctx.lineTo(0, 12); ctx.lineTo(8, 16); ctx.lineTo(13, 6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#7fff00'; ctx.lineWidth = 1; ctx.stroke();
+    for(let i = 0; i < 2; i++) { ctx.globalAlpha = 0.4;
+        let dripY = (t*20+i*30)%30; ctx.fillStyle = '#7fff00';
+        ctx.beginPath(); ctx.ellipse(-8+i*16, dripY-10, 2, 3, 0, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1; ctx.fillStyle = '#7fff00'; ctx.shadowColor = '#7fff00'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, -6, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#44ff00'; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.moveTo(-4, 14); ctx.lineTo(0, 26+Math.random()*5); ctx.lineTo(4, 14); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawStormPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    ctx.globalAlpha = 0.1; for(let i = 0; i < 3; i++) {
+        ctx.strokeStyle = '#4488ff'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(0, 0, 20+i*6+Math.sin(t*4+i)*3, 0, Math.PI*2); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    let hullGrad = ctx.createLinearGradient(0, -22, 0, 14);
+    hullGrad.addColorStop(0, '#1a1a4a'); hullGrad.addColorStop(0.5, '#2a2a6a'); hullGrad.addColorStop(1, '#0a0a2a');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-14, 6); ctx.lineTo(-8, 14); ctx.lineTo(0, 10); ctx.lineTo(8, 14); ctx.lineTo(14, 6); ctx.closePath(); ctx.fill();
+    if(Math.random() > 0.7) { ctx.strokeStyle = '#88ccff'; ctx.lineWidth = 1.5; ctx.shadowColor = '#88ccff'; ctx.shadowBlur = 10;
+        ctx.beginPath(); let lx = (Math.random()-0.5)*20; ctx.moveTo(lx, -10); ctx.lineTo(lx+Math.random()*6-3, 0); ctx.lineTo(lx+Math.random()*6-3, 8); ctx.stroke(); ctx.shadowBlur = 0; }
+    ctx.fillStyle = '#4488ff'; ctx.shadowColor = '#4488ff'; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(0, -8, 4, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    let eGrad = ctx.createLinearGradient(0, 12, 0, 28);
+    eGrad.addColorStop(0, '#4488ff'); eGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eGrad; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(0, 26+Math.random()*4); ctx.lineTo(4, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawObsidianPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    let hullGrad = ctx.createLinearGradient(-14, 0, 14, 0);
+    hullGrad.addColorStop(0, '#0a0a0a'); hullGrad.addColorStop(0.3, '#1a1a2e'); hullGrad.addColorStop(0.5, '#2a2a3e'); hullGrad.addColorStop(0.7, '#1a1a2e'); hullGrad.addColorStop(1, '#0a0a0a');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-14, 4); ctx.lineTo(-10, 14); ctx.lineTo(0, 10); ctx.lineTo(10, 14); ctx.lineTo(14, 4); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#666'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-7, 0); ctx.moveTo(0, -22); ctx.lineTo(7, 0); ctx.moveTo(-14, 4); ctx.lineTo(0, 10); ctx.moveTo(14, 4); ctx.lineTo(0, 10); ctx.stroke();
+    ctx.strokeStyle = `rgba(100,100,200,${0.3+Math.sin(t*2)*0.2})`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-14, 4); ctx.lineTo(-10, 14); ctx.lineTo(0, 10); ctx.lineTo(10, 14); ctx.lineTo(14, 4); ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = '#8888cc'; ctx.shadowColor = '#8888cc'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, -6, 3.5, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    let eGrad = ctx.createLinearGradient(0, 12, 0, 26);
+    eGrad.addColorStop(0, '#6666aa'); eGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eGrad; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.moveTo(-3, 12); ctx.lineTo(0, 24+Math.random()*3); ctx.lineTo(3, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawChromePlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    let hullGrad = ctx.createLinearGradient(-12, -20, 12, 14);
+    hullGrad.addColorStop(0, '#e0e0e0'); hullGrad.addColorStop(0.3, '#888'); hullGrad.addColorStop(0.5, '#fff'); hullGrad.addColorStop(0.7, '#aaa'); hullGrad.addColorStop(1, '#666');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-12, 6); ctx.lineTo(-6, 14); ctx.lineTo(0, 10); ctx.lineTo(6, 14); ctx.lineTo(12, 6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.5+Math.sin(t*3)*0.3;
+    ctx.beginPath(); ctx.moveTo(-6, -10); ctx.lineTo(6, 2); ctx.stroke(); ctx.globalAlpha = 1;
+    let cockpit = ctx.createRadialGradient(0, -8, 0, 0, -8, 5);
+    cockpit.addColorStop(0, '#fff'); cockpit.addColorStop(0.5, '#ccc'); cockpit.addColorStop(1, '#888');
+    ctx.fillStyle = cockpit; ctx.beginPath(); ctx.ellipse(0, -8, 4, 5, 0, 0, Math.PI*2); ctx.fill();
+    let eGrad = ctx.createLinearGradient(0, 12, 0, 28);
+    eGrad.addColorStop(0, '#fff'); eGrad.addColorStop(0.3, '#88ccff'); eGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eGrad; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(0, 26+Math.random()*4); ctx.lineTo(4, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+}
+function drawAuroraPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    ctx.globalAlpha = 0.12;
+    for(let i = 0; i < 4; i++) { let aGrad = ctx.createRadialGradient(Math.sin(t+i)*6, Math.cos(t*0.7+i)*6, 0, 0, 0, 28);
+        let colors = ['#00ff88','#ff00ff','#00ccff','#ffcc00']; aGrad.addColorStop(0, colors[i]); aGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = aGrad; ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    let hullGrad = ctx.createLinearGradient(0, -22, 0, 14);
+    let hue = (t*30)%360;
+    hullGrad.addColorStop(0, `hsl(${hue}, 70%, 30%)`); hullGrad.addColorStop(0.5, `hsl(${(hue+60)%360}, 80%, 40%)`); hullGrad.addColorStop(1, `hsl(${(hue+120)%360}, 70%, 25%)`);
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.bezierCurveTo(-6, -14, -14, 2, -10, 14); ctx.lineTo(0, 10); ctx.lineTo(10, 14); ctx.bezierCurveTo(14, 2, 6, -14, 0, -22); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = `hsl(${(hue+180)%360}, 100%, 60%)`; ctx.lineWidth = 1; ctx.globalAlpha = 0.6; ctx.stroke(); ctx.globalAlpha = 1;
+    let cockpit = ctx.createRadialGradient(0, -8, 0, 0, -8, 5);
+    cockpit.addColorStop(0, '#fff'); cockpit.addColorStop(0.5, `hsl(${hue}, 80%, 60%)`); cockpit.addColorStop(1, `hsl(${(hue+90)%360}, 70%, 40%)`);
+    ctx.fillStyle = cockpit; ctx.beginPath(); ctx.ellipse(0, -8, 4, 6, 0, 0, Math.PI*2); ctx.fill();
+    for(let i = 0; i < 3; i++) { ctx.globalAlpha = 0.5+Math.random()*0.3;
+        let eLen = 10+Math.random()*12; let eGrad = ctx.createLinearGradient(0, 12, 0, 12+eLen);
+        eGrad.addColorStop(0, `hsl(${(hue+i*40)%360}, 100%, 70%)`); eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad; ctx.beginPath(); ctx.moveTo(-3+i*2, 12); ctx.lineTo(-1+i*2, 12+eLen); ctx.lineTo(1+i*2, 12); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+}
+// ===== 3 MYTHIC SKINS =====
+let mythicSkinBuffs = { singularity: { critBonus: 0.05, coinMult: 1.15, autoShieldTimer: 0 }, ethereal: { dmgReduce: 0.10, xpMult: 1.20, phaseChance: 0.10 }, omega: { extraLife: false, dmgBonus: 1.25, freeEpic: false } };
+function drawSingularityPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Event horizon distortion rings
+    for(let i = 5; i > 0; i--) { ctx.globalAlpha = 0.06;
+        ctx.strokeStyle = i%2===0 ? '#ff00ff' : '#00ffff'; ctx.lineWidth = 2;
+        let r = 35 + i*5 + Math.sin(t*4+i)*4;
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.stroke(); }
+    // Particle absorption vortex
+    ctx.globalAlpha = 0.2;
+    for(let i = 0; i < 8; i++) { let pAngle = t*3 + i*(Math.PI/4); let pDist = 20 + Math.sin(t*5+i)*8;
+        let pGrad = ctx.createRadialGradient(Math.cos(pAngle)*pDist, Math.sin(pAngle)*pDist, 0, Math.cos(pAngle)*pDist, Math.sin(pAngle)*pDist, 4);
+        pGrad.addColorStop(0, '#fff'); pGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = pGrad; ctx.beginPath(); ctx.arc(Math.cos(pAngle)*pDist, Math.sin(pAngle)*pDist, 4, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    // Black hole core hull
+    let hullGrad = ctx.createRadialGradient(0, -4, 0, 0, -4, 22);
+    hullGrad.addColorStop(0, '#000'); hullGrad.addColorStop(0.4, '#0a001a'); hullGrad.addColorStop(0.7, '#1a0033'); hullGrad.addColorStop(1, '#330066');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.bezierCurveTo(-8, -16, -16, 0, -12, 16); ctx.lineTo(0, 12); ctx.lineTo(12, 16); ctx.bezierCurveTo(16, 0, 8, -16, 0, -24); ctx.closePath(); ctx.fill();
+    // Gravitational lensing edge
+    ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 2; ctx.shadowColor = '#ff00ff'; ctx.shadowBlur = 15;
+    ctx.globalAlpha = 0.7 + Math.sin(t*6)*0.3;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.bezierCurveTo(-8, -16, -16, 0, -12, 16); ctx.lineTo(0, 12); ctx.lineTo(12, 16); ctx.bezierCurveTo(16, 0, 8, -16, 0, -24); ctx.closePath(); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    // Singularity core
+    let coreGrad = ctx.createRadialGradient(0, -6, 0, 0, -6, 8);
+    coreGrad.addColorStop(0, '#000'); coreGrad.addColorStop(0.3, '#220044'); coreGrad.addColorStop(0.6, '#ff00ff'); coreGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = coreGrad; ctx.beginPath(); ctx.arc(0, -6, 8, 0, Math.PI*2); ctx.fill();
+    // Accretion disk
+    ctx.strokeStyle = '#ff88ff'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.ellipse(0, -2, 18, 5, t*2, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Dark matter engine trail
+    for(let i = 0; i < 4; i++) { ctx.globalAlpha = 0.4+Math.random()*0.4;
+        let eLen = 12+Math.random()*18; let eGrad = ctx.createLinearGradient(0, 14, 0, 14+eLen);
+        eGrad.addColorStop(0, '#ff00ff'); eGrad.addColorStop(0.4, '#8800aa'); eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad; ctx.beginPath(); let ex = (Math.random()-0.5)*10;
+        ctx.moveTo(ex-2, 14); ctx.lineTo(ex, 14+eLen); ctx.lineTo(ex+2, 14); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+}
+function drawEtherealPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Dimensional rift aura
+    ctx.globalAlpha = 0.08;
+    for(let i = 0; i < 6; i++) { let rx = Math.sin(t*2+i*1.1)*12; let ry = Math.cos(t*1.7+i*1.3)*12;
+        let rGrad = ctx.createRadialGradient(rx, ry, 0, rx, ry, 20);
+        let rColors = ['#00ffff','#ff00ff','#88ff88','#ffff00','#ff8800','#8888ff'];
+        rGrad.addColorStop(0, rColors[i]); rGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = rGrad; ctx.beginPath(); ctx.arc(rx, ry, 20, 0, Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    // Phase-shifting hull (flickers between visible states)
+    let phaseAlpha = 0.6 + Math.sin(t*8)*0.2 + Math.sin(t*13)*0.1;
+    ctx.globalAlpha = phaseAlpha;
+    let hullGrad = ctx.createLinearGradient(0, -24, 0, 16);
+    hullGrad.addColorStop(0, '#88ffff'); hullGrad.addColorStop(0.3, '#44aaff'); hullGrad.addColorStop(0.6, '#aa44ff'); hullGrad.addColorStop(1, '#ff44aa');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.bezierCurveTo(-10, -14, -16, 2, -14, 14); ctx.lineTo(-6, 18); ctx.lineTo(0, 14); ctx.lineTo(6, 18); ctx.lineTo(14, 14); ctx.bezierCurveTo(16, 2, 10, -14, 0, -24); ctx.closePath(); ctx.fill();
+    // Ghost echo (afterimage)
+    ctx.globalAlpha = 0.15; ctx.fillStyle = '#00ffff';
+    ctx.beginPath(); ctx.moveTo(Math.sin(t*3)*4, -24+Math.cos(t*2)*2); ctx.bezierCurveTo(-10+Math.sin(t)*3, -14, -16, 2, -14, 14); ctx.lineTo(0, 14); ctx.lineTo(14, 14); ctx.bezierCurveTo(16, 2, 10+Math.sin(t)*3, -14, Math.sin(t*3)*4, -24+Math.cos(t*2)*2); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    // Ethereal wing tendrils
+    ctx.strokeStyle = '#88ffff'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.moveTo(-14, 4); ctx.quadraticCurveTo(-28+Math.sin(t*4)*5, 0+Math.cos(t*3)*4, -22, 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(14, 4); ctx.quadraticCurveTo(28+Math.sin(t*4+1)*5, 0+Math.cos(t*3+1)*4, 22, 16); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Multi-spectrum cockpit
+    let cockpitGrad = ctx.createRadialGradient(0, -10, 0, 0, -10, 7);
+    cockpitGrad.addColorStop(0, '#fff'); cockpitGrad.addColorStop(0.3, `hsl(${(t*90)%360}, 100%, 70%)`); cockpitGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = cockpitGrad; ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 15;
+    ctx.beginPath(); ctx.arc(0, -10, 6, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    // Dimensional rift engine
+    for(let i = 0; i < 5; i++) { ctx.globalAlpha = 0.3+Math.random()*0.5;
+        let eLen = 15+Math.random()*20; let eGrad = ctx.createLinearGradient(0, 16, 0, 16+eLen);
+        let eHue = (t*60+i*40)%360;
+        eGrad.addColorStop(0, `hsl(${eHue}, 100%, 80%)`); eGrad.addColorStop(0.5, `hsl(${(eHue+60)%360}, 100%, 50%)`); eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad; ctx.beginPath(); let ex = (Math.random()-0.5)*12;
+        ctx.moveTo(ex-2, 16); ctx.lineTo(ex, 16+eLen); ctx.lineTo(ex+2, 16); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+}
+function drawOmegaPlane(x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle + Math.PI/2);
+    let t = Date.now() / 1000;
+    // Reality-bending field
+    ctx.globalAlpha = 0.05;
+    for(let i = 0; i < 8; i++) { let wAngle = t*2+i*(Math.PI/4); let wDist = 30+Math.sin(t*3+i)*8;
+        ctx.strokeStyle = `hsl(${(i*45+t*30)%360}, 100%, 60%)`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(Math.cos(wAngle)*8, Math.sin(wAngle)*8, wDist, wAngle, wAngle+Math.PI/3); ctx.stroke(); }
+    // Omega elemental corona
+    ctx.globalAlpha = 0.15;
+    let coronaGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 40);
+    coronaGrad.addColorStop(0, '#fff'); coronaGrad.addColorStop(0.2, '#ff00ff'); coronaGrad.addColorStop(0.4, '#00ffff'); coronaGrad.addColorStop(0.6, '#ffcc00'); coronaGrad.addColorStop(0.8, '#ff4400'); coronaGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = coronaGrad; ctx.beginPath(); ctx.arc(0, 0, 40, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    // Multi-element hull
+    let hullGrad = ctx.createLinearGradient(-16, -26, 16, 18);
+    hullGrad.addColorStop(0, '#ff0066'); hullGrad.addColorStop(0.2, '#ffcc00'); hullGrad.addColorStop(0.4, '#00ff88'); hullGrad.addColorStop(0.6, '#00ccff'); hullGrad.addColorStop(0.8, '#8800ff'); hullGrad.addColorStop(1, '#ff0066');
+    ctx.fillStyle = hullGrad;
+    ctx.beginPath(); ctx.moveTo(0, -26); ctx.bezierCurveTo(-8, -18, -18, -2, -14, 14); ctx.lineTo(-8, 20); ctx.lineTo(0, 16); ctx.lineTo(8, 20); ctx.lineTo(14, 14); ctx.bezierCurveTo(18, -2, 8, -18, 0, -26); ctx.closePath(); ctx.fill();
+    // Omega symbol on hull
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.shadowColor = '#fff'; ctx.shadowBlur = 10;
+    ctx.globalAlpha = 0.8 + Math.sin(t*4)*0.2;
+    ctx.beginPath(); ctx.arc(0, -2, 6, Math.PI*0.2, Math.PI*0.8, true);
+    ctx.moveTo(-5, 3); ctx.lineTo(-7, 6); ctx.moveTo(5, 3); ctx.lineTo(7, 6); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    // Elemental wing blades
+    ctx.fillStyle = 'rgba(255,0,255,0.4)';
+    ctx.beginPath(); ctx.moveTo(-14, 0); ctx.quadraticCurveTo(-32+Math.sin(t*4)*4, -6+Math.cos(t*3)*3, -26, 14); ctx.lineTo(-14, 10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,255,255,0.4)';
+    ctx.beginPath(); ctx.moveTo(14, 0); ctx.quadraticCurveTo(32+Math.sin(t*4)*4, -6+Math.cos(t*3)*3, 26, 14); ctx.lineTo(14, 10); ctx.closePath(); ctx.fill();
+    // All-seeing eye cockpit
+    let eyeGrad = ctx.createRadialGradient(0, -10, 0, 0, -10, 8);
+    eyeGrad.addColorStop(0, '#fff'); eyeGrad.addColorStop(0.2, `hsl(${(t*120)%360}, 100%, 70%)`); eyeGrad.addColorStop(0.5, `hsl(${(t*120+120)%360}, 100%, 50%)`); eyeGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = eyeGrad; ctx.shadowColor = '#fff'; ctx.shadowBlur = 20;
+    ctx.beginPath(); ctx.arc(0, -10, 7, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    // Omega engine: all-element fusion trail
+    for(let i = 0; i < 6; i++) { ctx.globalAlpha = 0.4+Math.random()*0.5;
+        let eLen = 18+Math.random()*25; let eGrad = ctx.createLinearGradient(0, 18, 0, 18+eLen);
+        let eColors = ['#ff0066','#ffcc00','#00ff88','#00ccff','#8800ff','#ff4400'];
+        eGrad.addColorStop(0, '#fff'); eGrad.addColorStop(0.3, eColors[i]); eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad; ctx.beginPath(); let ex = (i-2.5)*3;
+        ctx.moveTo(ex-1.5, 18); ctx.lineTo(ex, 18+eLen); ctx.lineTo(ex+1.5, 18); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+}
 const ProjectileManager = { drawProjectiles(list, color) { if (list.length === 0) return; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = color; ctx.lineCap = 'round'; list.forEach(p => { ctx.lineWidth = p.size * 1.5; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(p.prevX || p.x, p.prevY || p.y); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.globalAlpha = 1.0; ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }); ctx.restore(); } };
 const CHAPTER_1_DATA = { 1: { name: "Calibration", spawnRate: 100, enemySpeed: 1.2, enemyHp: 1, shootChance: 0, bgColor: "#000510" }, 2: { name: "First Contact", spawnRate: 80, enemySpeed: 1.4, enemyHp: 2, shootChance: 0.3, bgColor: "#050010" }, 3: { name: "Asteroid Belt", spawnRate: 40, enemySpeed: 1.8, enemyHp: 5, shootChance: 0, bgColor: "#101010" }, 4: { name: "Defensive Perimeter", spawnRate: 60, enemySpeed: 1.5, enemyHp: 3, shootChance: 0.6, bgColor: "#150000" }, 5: { name: "The Gatekeeper", spawnRate: 90, enemySpeed: 2.0, enemyHp: 4, shootChance: 0.2, bgColor: "#000" } };
 const CHAPTER_2_DATA = { 1: { name: "Ion Storm", spawnRate: 70, enemySpeed: 1.1, enemyHp: 3, shootChance: 0, bgColor: "#001515" }, 2: { name: "Orbital Drift", spawnRate: 65, enemySpeed: 1.4, enemyHp: 4, shootChance: 0.1, bgColor: "#150015" }, 3: { name: "Pulse Point", spawnRate: 55, enemySpeed: 1.2, enemyHp: 5, shootChance: 0.3, bgColor: "#000020" }, 4: { name: "Twin Strike", spawnRate: 45, enemySpeed: 1.9, enemyHp: 3, shootChance: 0.7, bgColor: "#100010" }, 5: { name: "The Void Core", spawnRate: 80, enemySpeed: 1.6, enemyHp: 5, shootChance: 0.2, bgColor: "#000" } };
@@ -954,13 +1262,54 @@ let gridPulse = 0, nukeCount = 0, medkitCount = 0, expMultiplier = 1.0, superNov
 let layers = [ { speed: 0.2, size: 100, color: "rgba(0, 255, 255, 0.05)" }, { speed: 0.5, size: 250, color: "rgba(0, 255, 255, 0.02)" } ];
 
 let homingActive = false, plasmaFieldActive = false, overchargeStacks = 0, shadowCloneActive = false, gravWellActive = false, berserkerMode = false, nanobotHeal = false, phaseWalkActive = false, deathMarkActive = false, orbitalStrikeActive = false;
+let temporalShiftActive = false, voidCannonActive = false, annihilationActive = false, realityBreachActive = false, cosmicFusionActive = false;
 let cyberTreeData = { hullArmor: 0, fireControl: 0, thrusterBoost: 0, magnetCore: 0, critMatrix: 0, shieldGen: 0, coinProcessor: 0, xpAmplifier: 0, bulletForge: 0, lifeSupport: 0 };
 let shieldRechargeQueued = false;
+const CARD_DESCRIPTIONS = {
+    "Speed": "Increases movement speed by 0.8. Helps dodge enemy bullets and reposition quickly.",
+    "Fire Rate": "Reduces shot cooldown by 2 frames (min 4). More bullets = more damage output.",
+    "Bullet Size": "Increases projectile size by 2px. Larger bullets hit enemies more easily.",
+    "Magnet": "Extends XP/coin pickup range by 50px. Less chasing, more collecting.",
+    "Hardened Hull": "Adds +2 max HP and heals 2. Extra survivability for tough fights.",
+    "Quick Dash": "Boosts speed by 1.2. A bigger speed increase than standard Speed upgrade.",
+    "Scavenger": "Adds +0.3x XP multiplier. Level up faster to get more upgrades.",
+    "Multi-Shot": "Fires +1 additional projectile per volley. Massive DPS increase.",
+    "Pierce": "Bullets pass through +1 additional enemy. Great for crowds.",
+    "Crit": "Adds +15% critical hit chance. Crits deal 5x damage.",
+    "Frost Shot": "Bullets slow enemies on hit. Reduces enemy speed by 60%.",
+    "Vampirism": "5% chance to heal 1 HP on enemy kill. Sustain through combat.",
+    "Homing Rounds": "Bullets gently curve toward nearest enemy. Never miss again.",
+    "Death Mark": "Instantly kills enemies at 2 HP or below. Execute weakened foes.",
+    "Nanobot Repair": "Regenerate 1 HP every 5 seconds. Passive healing over time.",
+    "Overcharge": "+1 bullet size and +5% crit. Stacks for massive power.",
+    "Tesla Aura": "Damages nearby enemies every 0.5s within 120px range. Passive AOE.",
+    "Drone Swarm": "Deploys an orbiting drone that auto-fires at enemies. Stacks.",
+    "Shield": "Absorbs one hit completely. Blocks bullets and collisions.",
+    "Chain Shot": "Bullets chain to a nearby enemy on hit. Double the targets.",
+    "Cyber Pulse": "Sends expanding energy wave every 2s that damages all enemies hit.",
+    "EMP Burst": "Every 10s, destroys all enemy bullets within 250px radius.",
+    "Ricochet": "Bullets bounce off screen edges. Doubles their effective range.",
+    "Plasma Field": "Damages enemies within 180px every 0.5s. Melts close-range threats.",
+    "Shadow Clone": "Fires a mirrored shot in the opposite direction. Rear coverage.",
+    "Gravity Well": "Pulls enemies within 300px toward you. Combine with Tesla Aura.",
+    "Phase Walk": "Become untouchable periodically. Phase through enemy bullets.",
+    "God Mode": "+10 max HP, full heal, +2 speed. Become nearly unstoppable.",
+    "Hyper-Drive": "Fire rate set to 2, +2 multi-shot, +5 bullet size. Maximum firepower.",
+    "Super Nova": "Periodically nukes all enemies on screen. Stacks reduce cooldown.",
+    "Berserker": "+3 speed, +30% crit chance. Glass cannon rage mode.",
+    "Orbital Strike": "Every 4s, calls down a strike on a random enemy cluster for 10 dmg.",
+    "Temporal Shift": "All enemies move 40% slower permanently. Time bends to your will.",
+    "Void Cannon": "Every 3s fires a massive piercing beam that hits everything in a line.",
+    "Annihilation": "Every 8s, destroys ALL enemies within 400px radius. Pure devastation.",
+    "Reality Breach": "Opens 3 dimensional rifts that continuously damage nearby enemies.",
+    "Cosmic Fusion": "Doubles effectiveness of ALL active abilities. Ultimate power multiplier."
+};
 const ALL_UPGRADES = { 
     common: [ {name:"Speed", e:()=> player.speed += 0.8}, {name:"Fire Rate", e:()=> player.fireRate = Math.max(player.fireRate - 2, 4)}, {name:"Bullet Size", e:()=> player.bulletSize += 2}, {name:"Magnet", e:()=> magnetRange += 50}, {name:"Hardened Hull", e:()=> { player.maxHealth += 2; player.health += 2; }}, {name:"Quick Dash", e:()=> player.speed += 1.2}, {name:"Scavenger", e:()=> expMultiplier += 0.3} ], 
     rare: [ {name:"Multi-Shot", e:()=> multiShot++}, {name:"Pierce", e:()=> pierceCount++}, {name:"Crit", e:()=> critChance += 0.15}, {name:"Frost Shot", e:()=> frostShot = true}, {name:"Vampirism", e:()=> vampirism += 0.05}, {name:"Homing Rounds", e:()=> homingActive = true}, {name:"Death Mark", e:()=> deathMarkActive = true}, {name:"Nanobot Repair", e:()=> nanobotHeal = true}, {name:"Overcharge", e:()=> { overchargeStacks++; player.bulletSize += 1; critChance += 0.05; }} ], 
     epic: [ {name:"Tesla Aura", e:()=> teslaAura = true}, {name:"Drone Swarm", e:()=> droneCount++}, {name:"Shield", e:()=> shieldActive = true}, {name:"Chain Shot", e:()=> chainShot = true}, {name:"Cyber Pulse", e:()=> { cyberPulseActive = true; cyberPulseCards++; }}, { name: "EMP Burst", e: () => { setInterval(() => { if (gameRunning && !paused) { bullets = bullets.filter(b => { let dist = Math.hypot(b.x - player.x, b.y - player.y); if (dist < 250) { spawnParticles(b.x, b.y, "cyan", 2); return false; } return true; }); shake += 5; spawnParticles(player.x, player.y, "rgba(0, 255, 255, 0.3)", 20); } }, 10000); } }, { name: "Ricochet", e: () => { player.canBounce = true; } }, {name:"Plasma Field", e:()=> plasmaFieldActive = true}, {name:"Shadow Clone", e:()=> shadowCloneActive = true}, {name:"Gravity Well", e:()=> gravWellActive = true}, {name:"Phase Walk", e:()=> phaseWalkActive = true} ], 
-    legendary: [ {name:"God Mode", e:()=> { player.maxHealth += 10; player.health = player.maxHealth; player.speed += 2; }}, {name:"Hyper-Drive", e:()=> { player.fireRate = 2; multiShot += 2; player.bulletSize += 5; }}, {name:"Super Nova", e:()=> { superNovaStacks++; playSound("level", 0.6); }}, {name:"Berserker", e:()=> { berserkerMode = true; player.speed += 3; critChance += 0.3; }}, {name:"Orbital Strike", e:()=> { orbitalStrikeActive = true; }} ] 
+    legendary: [ {name:"God Mode", e:()=> { player.maxHealth += 10; player.health = player.maxHealth; player.speed += 2; }}, {name:"Hyper-Drive", e:()=> { player.fireRate = 2; multiShot += 2; player.bulletSize += 5; }}, {name:"Super Nova", e:()=> { superNovaStacks++; playSound("level", 0.6); }}, {name:"Berserker", e:()=> { berserkerMode = true; player.speed += 3; critChance += 0.3; }}, {name:"Orbital Strike", e:()=> { orbitalStrikeActive = true; }}, {name:"Temporal Shift", e:()=> { temporalShiftActive = true; }}, {name:"Void Cannon", e:()=> { voidCannonActive = true; }} ],
+    mythic: [ {name:"Annihilation", e:()=> { annihilationActive = true; playSound("level", 1.0); }}, {name:"Reality Breach", e:()=> { realityBreachActive = true; playSound("level", 1.0); }}, {name:"Cosmic Fusion", e:()=> { cosmicFusionActive = true; if(teslaAura) teslaAura = 2; if(droneCount > 0) droneCount *= 2; if(plasmaFieldActive) plasmaFieldActive = 2; critChance = Math.min(critChance * 2, 1.0); multiShot = Math.max(multiShot, multiShot + 1); magnetRange *= 1.5; expMultiplier *= 2; playSound("level", 1.0); }} ]
 };
 function initPlayer() { 
     let hpBonus = permanentHPBonus + cyberTreeData.hullArmor * 3;
@@ -974,10 +1323,12 @@ function initPlayer() {
     superNovaStacks = 0; 
     superNovaCounter = 0;
     homingActive = false; plasmaFieldActive = false; overchargeStacks = 0; shadowCloneActive = false; gravWellActive = false; berserkerMode = false; nanobotHeal = cyberTreeData.lifeSupport >= 3; phaseWalkActive = false; deathMarkActive = false; orbitalStrikeActive = false;
+    temporalShiftActive = false; voidCannonActive = false; annihilationActive = false; realityBreachActive = false; cosmicFusionActive = false;
     expMultiplier = 1.0 + (cyberTreeData.xpAmplifier * 0.2); 
     stars = []; 
-    for(let i=0; i<200; i++) { 
-        stars.push({ x: Math.random() * 4000 - 2000, y: Math.random() * 4000 - 2000, z: Math.random() * 0.5 + 0.1, brightness: Math.random() }); 
+    for(let i=0; i<350; i++) { 
+        let starType = Math.random();
+        stars.push({ x: Math.random() * 4000 - 2000, y: Math.random() * 4000 - 2000, z: Math.random() * 0.5 + 0.1, brightness: Math.random(), size: starType < 0.05 ? 3 + Math.random()*2 : (starType < 0.2 ? 2 : 1), color: starType < 0.05 ? '#ffddaa' : (starType < 0.15 ? '#aaddff' : (starType < 0.25 ? '#ffaaaa' : '#ffffff')), twinkleSpeed: 0.5 + Math.random() * 3 }); 
     } 
     updateConsumableHUD(); 
 }
@@ -1029,7 +1380,34 @@ function customAlert(message, callback) {
         if (callback) callback();
     };
 }
-function openDev() { customPrompt("ENTER DEV PASSWORD:", "", true, (pw) => { if (pw === null) return; if(pw === "3214") { document.getElementById("promptModal").style.display = "none"; setPauseBtnVisibility(false); document.getElementById("devUI").style.display = "flex"; document.getElementById("pauseOverlay").style.display = "none"; updateConsumableHUD(); const devCards = document.getElementById("devCards"); devCards.innerHTML = ""; [...ALL_UPGRADES.common, ...ALL_UPGRADES.rare, ...ALL_UPGRADES.epic, ...ALL_UPGRADES.legendary].forEach(up => { let div = document.createElement("div"); div.className = "card " + (ALL_UPGRADES.legendary.includes(up) ? "legendary" : ""); div.innerHTML = `MOD::<br>${up.name.toUpperCase()}`; div.onclick = () => { up.e(); shake += 5; spawnParticles(player.x, player.y, "#ff0044", 10); addDevLog(`INJECTED_PAYLOAD: ${up.name.toUpperCase()}`); playSound("level", 0.2); }; devCards.appendChild(div); }); } else { document.getElementById("promptErrorMsg").innerText = "ACCESS DENIED."; errCount++; } }); }
+function openDev() { customPrompt("ENTER DEV PASSWORD:", "", true, (pw) => { if (pw === null) return; if(pw === "3214") { document.getElementById("promptModal").style.display = "none"; setPauseBtnVisibility(false); document.getElementById("devUI").style.display = "flex"; document.getElementById("pauseOverlay").style.display = "none"; updateConsumableHUD(); const devCards = document.getElementById("devCards"); devCards.innerHTML = "";
+    const allRarities = [
+        { key: "common", label: "COMMON", color: "#aaa" },
+        { key: "rare", label: "RARE", color: "#0096ff" },
+        { key: "epic", label: "EPIC", color: "#bf00ff" },
+        { key: "legendary", label: "LEGENDARY", color: "#ff4400" },
+        { key: "mythic", label: "MYTHIC", color: "#ff00ff" }
+    ];
+    allRarities.forEach(tier => {
+        if (!ALL_UPGRADES[tier.key] || ALL_UPGRADES[tier.key].length === 0) return;
+        let tierHeader = document.createElement("div");
+        tierHeader.style.cssText = `width:100%; text-align:center; color:${tier.color}; font-size:11px; letter-spacing:3px; margin:10px 0 5px; text-shadow:0 0 8px ${tier.color}; border-bottom:1px solid ${tier.color}40; padding-bottom:4px;`;
+        tierHeader.innerText = `// ${tier.label} //`;
+        devCards.appendChild(tierHeader);
+        ALL_UPGRADES[tier.key].forEach(up => {
+            let div = document.createElement("div");
+            div.className = "card " + tier.key;
+            let desc = CARD_DESCRIPTIONS[up.name] || '';
+            div.innerHTML = `<div style="font-size:7px; color:${tier.color}; margin-bottom:2px;">${tier.label}</div>MOD::<br>${up.name.toUpperCase()}<div style="font-size:7px; color:rgba(255,255,255,0.5); margin-top:4px; line-height:1.2;">${desc}</div>`;
+            div.style.height = "auto";
+            div.style.minHeight = "60px";
+            div.style.padding = "8px";
+            if (tier.key === "mythic") { div.style.borderColor = "#ff00ff"; div.style.background = "rgba(255,0,255,0.15)"; div.style.boxShadow = "0 0 15px rgba(255,0,255,0.3)"; }
+            div.onclick = () => { up.e(); shake += 5; spawnParticles(player.x, player.y, tier.color, 10); addDevLog(`INJECTED_PAYLOAD: [${tier.label}] ${up.name.toUpperCase()}`); playSound("level", 0.2); };
+            devCards.appendChild(div);
+        });
+    });
+} else { document.getElementById("promptErrorMsg").innerText = "ACCESS DENIED."; errCount++; } }); }
 function addDevLog(text, isSOS = false) { const log = document.getElementById("devLog"); const div = document.createElement("div"); div.className = isSOS ? "sos-msg" : ""; div.innerHTML = `> [${new Date().toLocaleTimeString()}] ${text}`; log.prepend(div); if(log.childNodes.length > 8) log.removeChild(log.lastChild); }
 function setDevLevel() { customPrompt("JUMP TO LEVEL:", level, false, (val) => { document.getElementById("promptModal").style.display = "none"; if(val !== null && val !== "") { level = Math.max(1, parseInt(val) || 1); xp = 0; spawnParticles(player.x, player.y, "cyan", 20); addDevLog(`PARAM_MOD: LEVEL_SET_${level}`); } }); }
 function setDevCoins() { customPrompt("ENTER COIN AMOUNT:", globalCoins, false, (val) => { document.getElementById("promptModal").style.display = "none"; if(val !== null && val !== "") { globalCoins = parseInt(val) || 0; addDevLog(`PARAM_MOD: CREDITS_INFLATED`); } }); }
@@ -1065,25 +1443,94 @@ function spawnBoss(){ bossActive = true; let bossHp = isEndless ? (100 + (level 
 function openShop() { setPauseBtnVisibility(false); document.getElementById("menu").style.display = "none"; const shop = document.getElementById("shopUI"); shop.style.display = "flex"; shop.style.opacity = "0"; setTimeout(() => { shop.style.opacity = "1"; shake += 15; }, 50); renderShop(); }
 let activeSkin = "default";
 let purchasedSkins = ["default"];
-function renderShop() { const shopBank = document.getElementById("shopBank"); if (shopBank) shopBank.innerText = globalCoins; const shopCards = document.getElementById("shopCards"); if (!shopCards) return; shopCards.innerHTML = ""; const items = [ { name: "Nuke", cost: 50, type: "CONSUMABLE", owned: false, desc: "Clears all enemies on screen", effect: () => { nukeCount++; updateConsumableHUD(); } }, { name: "Medkit", cost: 30, type: "CONSUMABLE", owned: false, desc: "Restores 2 HP instantly", effect: () => { medkitCount++; updateConsumableHUD(); } }, { name: "Armor Plating", cost: 150, type: "PERMANENT", owned: permanentHPBonus >= 500, desc: "+10 permanent max HP", effect: () => permanentHPBonus += 10 }, { name: "XP Siphon", cost: 200, type: "PERMANENT", owned: expMultiplier > 50.0, desc: "+0.5x XP multiplier", effect: () => expMultiplier += 0.5 }, { name: "Viper Skin", cost: 500, type: "SKIN", owned: purchasedSkins.includes("viper"), desc: "Toxic green stealth fighter", effect: () => { if(!purchasedSkins.includes("viper")) purchasedSkins.push("viper"); activeSkin = "viper"; } }, { name: "Ghost Skin", cost: 1000, type: "SKIN", owned: purchasedSkins.includes("ghost"), desc: "Spectral translucent hull", effect: () => { if(!purchasedSkins.includes("ghost")) purchasedSkins.push("ghost"); activeSkin = "ghost"; } }, { name: "Phantom Skin", cost: 60000, type: "SKIN", rarity: "EPIC", owned: purchasedSkins.includes("phantom"), desc: "Void-class interceptor with dual plasma thrusters and phase-shift plating", effect: () => { if(!purchasedSkins.includes("phantom")) purchasedSkins.push("phantom"); activeSkin = "phantom"; } }, { name: "Inferno Skin", cost: 100000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("inferno"), desc: "Hellfire-forged dreadnought with triple afterburners and ember particle trail", effect: () => { if(!purchasedSkins.includes("inferno")) purchasedSkins.push("inferno"); activeSkin = "inferno"; } }, { name: "Solar Skin", cost: 150000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("solar"), desc: "Golden solar interceptor with corona glow and solar panel wings", effect: () => { if(!purchasedSkins.includes("solar")) purchasedSkins.push("solar"); activeSkin = "solar"; } }, { name: "Nebula Skin", cost: 200000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("nebula"), desc: "Nebula cruiser wreathed in cosmic gas clouds with tendril wings", effect: () => { if(!purchasedSkins.includes("nebula")) purchasedSkins.push("nebula"); activeSkin = "nebula"; } }, { name: "Void Skin", cost: 300000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("void"), desc: "Abyssal shadow hull with void eye and dark anti-matter engine", effect: () => { if(!purchasedSkins.includes("void")) purchasedSkins.push("void"); activeSkin = "void"; } }, { name: "Quantum Skin", cost: 500000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("quantum"), desc: "Quantum-state fighter with entangled particle engines and circuit hull", effect: () => { if(!purchasedSkins.includes("quantum")) purchasedSkins.push("quantum"); activeSkin = "quantum"; } }, { name: "Celestial Skin", cost: 1000000, type: "SKIN", rarity: "LEGENDARY", owned: purchasedSkins.includes("celestial"), desc: "Divine white-gold warship with halo rings and angelic wings", effect: () => { if(!purchasedSkins.includes("celestial")) purchasedSkins.push("celestial"); activeSkin = "celestial"; } }, { name: "Shield Recharge", cost: 75, type: "CONSUMABLE", owned: false, desc: "Grants shield for next run", effect: () => { shieldRechargeQueued = true; } }, { name: "Coin Magnet", cost: 300, type: "PERMANENT", owned: false, desc: "+100 permanent magnet range", effect: () => magnetRange += 100 }, { name: "Starter Pack", cost: 500, type: "PERMANENT", owned: permanentHPBonus >= 1000 && expMultiplier > 100, desc: "+5 HP & +1.0x XP", effect: () => { permanentHPBonus += 5; expMultiplier += 1.0; } } ]; items.forEach(item => { let div = document.createElement("div"); div.className = "shop-card"; const skinID = item.name.toLowerCase().split(" ")[0]; let isOwned = (item.type === "PERMANENT" || item.type === "SKIN") && item.owned; let isEquipped = item.type === "SKIN" && activeSkin === skinID; let status = item.type === "CONSUMABLE" ? "STOCK_AVAILABLE" : (isOwned ? (isEquipped ? "EQUIPPED" : "OWNED") : "AVAILABLE"); let priceTag = isOwned ? (isEquipped ? "ACTIVE" : "SELECT") : "\u{1F4B0}" + item.cost.toLocaleString(); let rarityLabel = item.rarity || (item.type === "SKIN" ? "RARE" : item.type); let borderColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.6)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.6)" : "rgba(255,215,0,0.3)"); let glowColor = item.rarity === "LEGENDARY" ? "rgba(255,68,0,0.3)" : (item.rarity === "EPIC" ? "rgba(191,0,255,0.2)" : "rgba(255,215,0,0.1)"); let nameColor = item.rarity === "LEGENDARY" ? "#ff4400" : (item.rarity === "EPIC" ? "#bf00ff" : "gold"); if (item.rarity === "LEGENDARY" || item.rarity === "EPIC") { div.style.borderColor = borderColor; div.style.boxShadow = `inset 0 0 20px ${glowColor}, 0 0 15px ${glowColor}`; } div.innerHTML = `<div style="font-size: 8px; opacity: 0.6; text-align:left;">TYPE: ${item.type} // ${rarityLabel}</div><div style="font-size: 14px; margin: 10px 0; font-weight: 900; color: ${nameColor}; text-shadow: 0 0 8px ${nameColor};">${item.name}</div><div style="font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 5px; flex-grow: 1; text-align:left; line-height: 1.4;">// ${item.desc}<br>// STATUS: ${status}</div><div style="font-size: 16px; border-top: 1px solid ${borderColor}; padding-top: 10px; ${isEquipped ? 'color: #0f0; text-shadow: 0 0 10px #0f0;' : ''}">${priceTag}</div>`; div.onpointerdown = () => {
-    const sid = item.name.toLowerCase().split(" ")[0];
-    if (item.type === "SKIN" && purchasedSkins.includes(sid)) {
-        activeSkin = sid;
-        renderShop();
-        return;
+function renderShop() { const shopBank = document.getElementById("shopBank"); if (shopBank) shopBank.innerText = globalCoins; const shopCards = document.getElementById("shopCards"); if (!shopCards) return; shopCards.innerHTML = "";
+    const consumables = [
+        { name: "Nuke", cost: 50, type: "CONSUMABLE", owned: false, desc: "Clears all enemies on screen", effect: () => { nukeCount++; updateConsumableHUD(); } },
+        { name: "Medkit", cost: 30, type: "CONSUMABLE", owned: false, desc: "Restores 2 HP instantly", effect: () => { medkitCount++; updateConsumableHUD(); } },
+        { name: "Shield Recharge", cost: 75, type: "CONSUMABLE", owned: false, desc: "Grants shield for next run", effect: () => { shieldRechargeQueued = true; } },
+        { name: "Armor Plating", cost: 150, type: "PERMANENT", owned: permanentHPBonus >= 500, desc: "+10 permanent max HP", effect: () => permanentHPBonus += 10 },
+        { name: "XP Siphon", cost: 200, type: "PERMANENT", owned: expMultiplier > 50.0, desc: "+0.5x XP multiplier", effect: () => expMultiplier += 0.5 },
+        { name: "Coin Magnet", cost: 300, type: "PERMANENT", owned: false, desc: "+100 permanent magnet range", effect: () => magnetRange += 100 },
+        { name: "Starter Pack", cost: 500, type: "PERMANENT", owned: permanentHPBonus >= 1000 && expMultiplier > 100, desc: "+5 HP & +1.0x XP", effect: () => { permanentHPBonus += 5; expMultiplier += 1.0; } }
+    ];
+    const skinData = [
+        { id: "viper", name: "Viper", cost: 500, rarity: "COMMON", desc: "Toxic green stealth fighter" },
+        { id: "ghost", name: "Ghost", cost: 1000, rarity: "COMMON", desc: "Spectral translucent hull" },
+        { id: "rust", name: "Rust", cost: 2000, rarity: "COMMON", desc: "Battle-scarred hull with corrosion plating" },
+        { id: "neon", name: "Neon", cost: 3500, rarity: "COMMON", desc: "Color-cycling neon glow fighter" },
+        { id: "crimson", name: "Crimson", cost: 5000, rarity: "RARE", desc: "Blood-red interceptor with dark trails" },
+        { id: "frost", name: "Frost", cost: 7500, rarity: "RARE", desc: "Ice-blue cryo fighter with frost particles" },
+        { id: "pulse", name: "Pulse", cost: 10000, rarity: "RARE", desc: "Green pulsing energy aura ship" },
+        { id: "toxic", name: "Toxic", cost: 15000, rarity: "RARE", desc: "Acid-green bio-hazard hull with drip FX" },
+        { id: "storm", name: "Storm", cost: 20000, rarity: "EPIC", desc: "Storm-class destroyer with lightning arcs" },
+        { id: "obsidian", name: "Obsidian", cost: 30000, rarity: "EPIC", desc: "Dark obsidian hull with purple accents" },
+        { id: "chrome", name: "Chrome", cost: 40000, rarity: "EPIC", desc: "Polished chrome hull with mirror reflections" },
+        { id: "aurora", name: "Aurora", cost: 55000, rarity: "EPIC", desc: "Rainbow aurora hull with dynamic hue shifts" },
+        { id: "phantom", name: "Phantom", cost: 60000, rarity: "EPIC", desc: "Void-class interceptor with phase-shift plating" },
+        { id: "inferno", name: "Inferno", cost: 100000, rarity: "LEGENDARY", desc: "Hellfire dreadnought with ember particle trail" },
+        { id: "solar", name: "Solar", cost: 150000, rarity: "LEGENDARY", desc: "Golden solar interceptor with corona glow" },
+        { id: "nebula", name: "Nebula", cost: 200000, rarity: "LEGENDARY", desc: "Nebula cruiser wreathed in cosmic gas clouds" },
+        { id: "void", name: "Void", cost: 300000, rarity: "LEGENDARY", desc: "Abyssal shadow hull with dark anti-matter engine" },
+        { id: "quantum", name: "Quantum", cost: 500000, rarity: "LEGENDARY", desc: "Quantum-state fighter with entangled particles" },
+        { id: "celestial", name: "Celestial", cost: 1000000, rarity: "LEGENDARY", desc: "Divine white-gold warship with angelic wings" },
+        { id: "singularity", name: "Singularity", cost: 5000000, rarity: "MYTHIC", desc: "Black hole core with event horizon + accretion disk. +5% crit, +15% coins, auto-shield", buffs: "+5% CRIT | +15% COINS | AUTO-SHIELD" },
+        { id: "ethereal", name: "Ethereal", cost: 10000000, rarity: "MYTHIC", desc: "Phase-shifting dimensional rift ship with ghost echoes. -10% dmg taken, +20% XP, 10% phase", buffs: "-10% DMG | +20% XP | 10% PHASE" },
+        { id: "omega", name: "Omega", cost: 15000000, rarity: "MYTHIC", desc: "All-element fusion with reality-bending field. +25% dmg, extra life, free epic card", buffs: "+25% DMG | EXTRA LIFE | FREE EPIC" }
+    ];
+    function getRarityStyle(rarity) {
+        switch(rarity) {
+            case "MYTHIC": return { border: "rgba(255,0,255,0.8)", glow: "rgba(255,0,255,0.4)", name: "#ff00ff", bg: "linear-gradient(135deg, rgba(20,0,40,0.9), rgba(0,0,20,0.9))" };
+            case "LEGENDARY": return { border: "rgba(255,68,0,0.6)", glow: "rgba(255,68,0,0.3)", name: "#ff4400", bg: "" };
+            case "EPIC": return { border: "rgba(191,0,255,0.6)", glow: "rgba(191,0,255,0.2)", name: "#bf00ff", bg: "" };
+            case "RARE": return { border: "rgba(0,150,255,0.5)", glow: "rgba(0,150,255,0.2)", name: "#0096ff", bg: "" };
+            default: return { border: "rgba(255,215,0,0.3)", glow: "rgba(255,215,0,0.1)", name: "gold", bg: "" };
+        }
     }
-    if ((item.type === "CONSUMABLE" || !item.owned) && globalCoins >= item.cost) {
-        globalCoins -= item.cost;
-        item.effect();
-        shake += 10;
-        spawnParticles(canvas.width / 2, canvas.height / 2, "gold", 20);
-        playSound("level", 0.3);
-        renderShop();
-        const menuBank = document.getElementById("menuBank");
-        if (menuBank) menuBank.innerText = globalCoins;
+    function makeShopCard(item, isSkin) {
+        let div = document.createElement("div"); div.className = "shop-card";
+        let sid = isSkin ? item.id : item.name.toLowerCase().split(" ")[0];
+        let isOwned = isSkin ? purchasedSkins.includes(sid) : ((item.type === "PERMANENT") && item.owned);
+        let isEquipped = isSkin && activeSkin === sid;
+        let status = (!isSkin && item.type === "CONSUMABLE") ? "STOCK" : (isOwned ? (isEquipped ? "EQUIPPED" : "OWNED") : "AVAILABLE");
+        let priceTag = isOwned ? (isEquipped ? "ACTIVE" : "SELECT") : "\u{1F4B0}" + item.cost.toLocaleString();
+        let rarity = isSkin ? item.rarity : (item.type || "ITEM");
+        let style = getRarityStyle(rarity);
+        if (rarity === "MYTHIC" || rarity === "LEGENDARY" || rarity === "EPIC" || rarity === "RARE") { div.style.borderColor = style.border; div.style.boxShadow = `inset 0 0 20px ${style.glow}, 0 0 15px ${style.glow}`; }
+        if (rarity === "MYTHIC" && style.bg) div.style.background = style.bg;
+        let buffsHtml = item.buffs ? `<div style="font-size:7px; color:#ff00ff; margin:3px 0; letter-spacing:1px; text-shadow:0 0 5px #ff00ff;">[ ${item.buffs} ]</div>` : '';
+        div.innerHTML = `<div style="font-size: 8px; opacity: 0.6; text-align:left;">${isSkin ? 'SKIN' : item.type} // ${rarity}</div><div style="font-size: 14px; margin: 8px 0 4px; font-weight: 900; color: ${style.name}; text-shadow: 0 0 8px ${style.name};">${isSkin ? item.name + ' Skin' : item.name}</div>${buffsHtml}<div style="font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 5px; flex-grow: 1; text-align:left; line-height: 1.4;">// ${item.desc}<br>// STATUS: ${status}</div><div style="font-size: 16px; border-top: 1px solid ${style.border}; padding-top: 8px; ${isEquipped ? 'color: #0f0; text-shadow: 0 0 10px #0f0;' : ''}">${priceTag}</div>`;
+        div.onpointerdown = () => {
+            if (isSkin && purchasedSkins.includes(sid)) { activeSkin = sid; renderShop(); return; }
+            if ((!isSkin && (item.type === "CONSUMABLE" || !item.owned)) && globalCoins >= item.cost) { globalCoins -= item.cost; item.effect(); shake += 10; spawnParticles(canvas.width/2, canvas.height/2, "gold", 20); playSound("level", 0.3); renderShop(); const menuBank = document.getElementById("menuBank"); if (menuBank) menuBank.innerText = globalCoins; }
+            if (isSkin && !purchasedSkins.includes(sid) && globalCoins >= item.cost) { globalCoins -= item.cost; purchasedSkins.push(sid); activeSkin = sid; shake += 10; spawnParticles(canvas.width/2, canvas.height/2, rarity === "MYTHIC" ? "#ff00ff" : "gold", 30); playSound("level", 0.5); renderShop(); const menuBank = document.getElementById("menuBank"); if (menuBank) menuBank.innerText = globalCoins; }
+        };
+        return div;
     }
-};
-shopCards.appendChild(div); }); }
+    let headerItems = document.createElement("div");
+    headerItems.innerHTML = `<div style="color:cyan; font-size:14px; font-weight:900; letter-spacing:3px; margin:15px 0 10px; text-shadow:0 0 10px cyan; border-bottom:1px solid rgba(0,255,255,0.3); padding-bottom:8px;">// ITEMS & UPGRADES //</div>`;
+    shopCards.appendChild(headerItems);
+    let itemGrid = document.createElement("div");
+    itemGrid.style.cssText = "display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;";
+    consumables.forEach(item => itemGrid.appendChild(makeShopCard(item, false)));
+    shopCards.appendChild(itemGrid);
+    let headerSkins = document.createElement("div");
+    headerSkins.innerHTML = `<div style="color:#ff00ff; font-size:14px; font-weight:900; letter-spacing:3px; margin:15px 0 10px; text-shadow:0 0 10px #ff00ff; border-bottom:1px solid rgba(255,0,255,0.3); padding-bottom:8px;">// SKIN COLLECTION // <span style="font-size:10px; opacity:0.6;">(${purchasedSkins.length}/${skinData.length + 1} owned)</span></div>`;
+    shopCards.appendChild(headerSkins);
+    const rarityOrder = ["COMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
+    rarityOrder.forEach(tier => {
+        let tierSkins = skinData.filter(s => s.rarity === tier);
+        if (tierSkins.length === 0) return;
+        let tierStyle = getRarityStyle(tier);
+        let tierLabel = document.createElement("div");
+        tierLabel.innerHTML = `<span style="font-size:10px; color:${tierStyle.name}; letter-spacing:2px; opacity:0.8; text-shadow:0 0 5px ${tierStyle.name};">[ ${tier} ]</span>`;
+        tierLabel.style.cssText = "margin:10px 0 5px; text-align:center;";
+        shopCards.appendChild(tierLabel);
+        let skinGrid = document.createElement("div");
+        skinGrid.style.cssText = "display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:10px;";
+        tierSkins.forEach(skin => skinGrid.appendChild(makeShopCard(skin, true)));
+        shopCards.appendChild(skinGrid);
+    });
+}
 function closeShop() { document.getElementById("shopUI").style.display = "none"; showMenu(); }
 
 const CYBER_TREE_NODES = [
@@ -1164,7 +1611,7 @@ enemies.forEach((e, ei) => {
         if(teslaAura && Math.floor(frameCount) % 10 === 0 && Math.hypot(e.x - player.x, e.y - player.y) < 120) { e.hp -= 2; spawnParticles(e.x, e.y, "cyan", 2); if(e.hp <= 0) { gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.2}); enemies.splice(ei, 1); playSound("hit", 0.1); } }
         if(Math.hypot(e.x - player.x, e.y - player.y) < player.hitbox + e.size){ if(shieldActive) { shieldActive = false; enemies.splice(ei, 1); playSound("hit", 0.4); } else { player.health -= 2; shake += 15; hitFlash = 0.8; spawnParticles(player.x, player.y, "white"); enemies.splice(ei, 1); playSound("hit", 0.3); checkGameOver(); } }
     });if(boss){ boss.angle += 0.04 * timeScale; let isPhase2 = boss.hp < (boss.maxHp / 2); if (Math.floor(frameCount) % 5 === 0) { boss.trail = boss.trail || []; boss.trail.push({x: boss.x, y: boss.y}); if (boss.trail.length > 6) boss.trail.shift(); } if (currentChapter === 3) { if (!isPhase2) { if (Math.floor(frameCount) % 45 === 0) { let toPlayer = Math.atan2(player.y - boss.y, player.x - boss.x); for (let i = -1; i <= 1; i++) { bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(toPlayer + i*0.4) * 6, dy: Math.sin(toPlayer + i*0.4) * 6, size: 10, trail: [] }); } } if (Math.floor(frameCount) % 120 === 0) { for (let i = 0; i < 16; i++) { let a = (i/16) * Math.PI * 2; bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * 5, dy: Math.sin(a) * 5, size: 7, trail: [] }); } } } else { boss.x += Math.cos(boss.angle * 2) * 8 * timeScale; boss.y += Math.sin(boss.angle * 2) * 4 * timeScale; if (Math.floor(frameCount) % 4 === 0) { let a = boss.angle * 5; bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * 8, dy: Math.sin(a) * 8, size: 5, trail: [] }); } } } else { if(isPhase2) { let bossAngle = Math.atan2(player.y - boss.y, player.x - boss.x); boss.x += Math.cos(bossAngle) * 3 * timeScale; boss.y += Math.sin(bossAngle) * 3 * timeScale; } let shotCooldown = isPhase2 ? 7 : 10; if(Math.floor(frameCount) % shotCooldown === 0){ for(let i=0; i<8; i++){ let a = boss.angle + (i * Math.PI/4); bullets.push({ x: boss.x, y: boss.y, prevX: boss.x, prevY: boss.y, dx: Math.cos(a) * (isPhase2 ? 7 : 5), dy: Math.sin(a) * (isPhase2 ? 7 : 5), size: 8, trail: [] }); } } } }
-    gems = gems.filter(g => { let dist = Math.hypot(player.x - g.x, player.y - g.y); if(dist < magnetRange) { let angle = Math.atan2(player.y - g.y, player.x - g.x); g.x += Math.cos(angle) * 8 * timeScale; g.y += Math.sin(angle) * 8 * timeScale; } if(dist < 30) { if(g.isCoin) { let coinBonus = 1 + (cyberTreeData.coinProcessor * 0.15); let coinAmt = Math.floor(10 * coinBonus); globalCoins += coinAmt; currentRunCoins += coinAmt; playSound("coin", 0.2); } else { xp += expMultiplier; } if(xp >= level * 4) levelUp(); return false; } return true; });
+    gems = gems.filter(g => { let dist = Math.hypot(player.x - g.x, player.y - g.y); if(dist < magnetRange) { let angle = Math.atan2(player.y - g.y, player.x - g.x); g.x += Math.cos(angle) * 8 * timeScale; g.y += Math.sin(angle) * 8 * timeScale; } if(dist < 30) { if(g.isCoin) { let coinBonus = 1 + (cyberTreeData.coinProcessor * 0.15); let chapterScale = isEndless ? (1 + Math.floor(level / 5) * 0.25) : (1 + (currentChapter - 1) * 0.3 + (currentStage - 1) * 0.05); let skinCoinMult = (activeSkin === 'singularity' && mythicSkinBuffs.singularity) ? mythicSkinBuffs.singularity.coinMult : 1.0; let coinAmt = Math.floor(10 * coinBonus * chapterScale * skinCoinMult); globalCoins += coinAmt; currentRunCoins += coinAmt; playSound("coin", 0.2); } else { let skinXpMult = (activeSkin === 'ethereal' && mythicSkinBuffs.ethereal) ? mythicSkinBuffs.ethereal.xpMult : 1.0; xp += expMultiplier * skinXpMult; } if(xp >= level * 4) levelUp(); return false; } return true; });
     particles.forEach(p => { p.x += p.vx * timeScale; p.y += p.vy * timeScale; p.life -= 0.02 * timeScale; }); 
     particles = particles.filter(p => p.life > 0);
 
@@ -1183,10 +1630,14 @@ enemies.forEach((e, ei) => {
     if (deathMarkActive) { enemies.forEach(e => { if (e.hp <= 2 && e.hp > 0) { e.hp = 0; spawnParticles(e.x, e.y, "#ff0044", 8); gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.3}); } }); enemies = enemies.filter(e => e.hp > 0); }
     if (orbitalStrikeActive && Math.floor(frameCount) % 240 === 0 && enemies.length > 0) { let target = enemies[Math.floor(Math.random() * enemies.length)]; spawnShockwave(target.x, target.y); shake += 15; enemies.forEach(e => { if (Math.hypot(e.x - target.x, e.y - target.y) < 150) { e.hp -= 10; spawnParticles(e.x, e.y, "#ffcc00", 10); } }); enemies = enemies.filter(e => e.hp > 0); playSound("hit", 0.5); }
     if (shadowCloneActive && Math.floor(frameCount) % player.fireRate === 0 && rightStick.active) { let cloneAngle = Math.atan2(rightStick.vy, rightStick.vx) + Math.PI; playerBullets.push({ x: player.x, y: player.y, prevX: player.x, prevY: player.y, vx: Math.cos(cloneAngle) * 10, vy: Math.sin(cloneAngle) * 10, size: player.bulletSize * 0.7, pierce: 1, hasBounced: false, targetsHit: [], trail: [], isClone: true }); }
+    if (temporalShiftActive) { enemies.forEach(e => { e.speed = Math.min(e.speed, (e.originalSpeed || e.speed) * 0.6); if (!e.originalSpeed) e.originalSpeed = e.speed / 0.6; }); }
+    if (voidCannonActive && Math.floor(frameCount) % 180 === 0) { let angle = rightStick.lastAngle || -Math.PI/2; for (let i = -2; i <= 2; i++) { playerBullets.push({ x: player.x, y: player.y, prevX: player.x, prevY: player.y, vx: Math.cos(angle) * 20, vy: Math.sin(angle) * 20, size: player.bulletSize * 3, pierce: 999, hasBounced: false, targetsHit: [], trail: [], isVoidBeam: true }); } spawnShockwave(player.x, player.y); shake += 10; spawnParticles(player.x, player.y, "#8800ff", 15); playSound("hit", 0.4); }
+    if (annihilationActive && Math.floor(frameCount) % 480 === 0) { shake += 40; hitFlash = 1.5; spawnShockwave(player.x, player.y); let killCount = 0; enemies.forEach(e => { if (Math.hypot(e.x - player.x, e.y - player.y) < 400) { e.hp = -999; spawnParticles(e.x, e.y, "#ff00ff", 12); gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.4}); killCount++; } }); enemies = enemies.filter(e => e.hp > 0); if (boss && Math.hypot(boss.x - player.x, boss.y - player.y) < 400) { boss.hp -= boss.maxHp * 0.2; spawnParticles(boss.x, boss.y, "#ff00ff", 30); } playSound("hit", 1.0); }
+    if (realityBreachActive && Math.floor(frameCount) % 60 === 0) { for (let r = 0; r < 3; r++) { let riftAngle = (frameCount * 0.02) + (r * Math.PI * 2 / 3); let rx = player.x + Math.cos(riftAngle) * 150; let ry = player.y + Math.sin(riftAngle) * 150; enemies.forEach(e => { if (Math.hypot(e.x - rx, e.y - ry) < 100) { e.hp -= 2; spawnParticles(e.x, e.y, "#00ffcc", 3); } }); enemies = enemies.filter(e => e.hp > 0); } }
     playerBullets.forEach((b, bi) => { enemies.forEach((e, ei) => { if(e.type === "phaser" && !e.phaseVisible) return; if(!b.targetsHit.includes(e) && Math.hypot(b.x-e.x, b.y-e.y) < (e.size + b.size)){ if(e.type === "shielder" && e.shieldHp > 0) { e.shieldHp--; spawnParticles(e.x, e.y, "#00ccff", 5); b.targetsHit.push(e); b.pierce--; playSound("hit", 0.1); return; } let isCrit = Math.random() < critChance; e.hp -= (isCrit ? 5 : 1); playSound("hit", 0.1); if(chainShot && !b.isChained) { let nextTarget = null; let minDist = 300; enemies.forEach(nextE => { if(nextE !== e) { let d = Math.hypot(e.x - nextE.x, e.y - nextE.y); if(d < minDist) { minDist = d; nextTarget = nextE; } } }); if(nextTarget) { ctx.beginPath(); ctx.strokeStyle = "lime"; ctx.lineWidth = 2; ctx.moveTo(e.x, e.y); ctx.lineTo(nextTarget.x, nextTarget.y); ctx.stroke(); let angle = Math.atan2(nextTarget.y - e.y, nextTarget.x - e.x); playerBullets.push({ x: e.x, y: e.y, prevX: e.x, prevY: e.y, vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15, size: b.size * 0.8, pierce: 1, isChained: true, targetsHit: [e], trail: [] }); spawnParticles(e.x, e.y, "lime", 5); } } if(Math.random() < vampirism) player.health = Math.min(player.health + 1, player.maxHealth); if(frostShot) e.frozen = 120; spawnParticles(e.x, e.y, isCrit ? "red" : (b.isDroneBullet ? "cyan" : "#a0f")); b.targetsHit.push(e); b.pierce--; if(e.hp <= 0){ gems.push({x: e.x, y: e.y, isCoin: Math.random() < 0.2}); if(e.type === "splitter") { for(let s = 0; s < 2; s++) { let sAngle = Math.random() * Math.PI * 2; enemies.push({ x: e.x + Math.cos(sAngle) * 20, y: e.y + Math.sin(sAngle) * 20, hp: Math.max(1, Math.floor(e.hp / 2) + 2), speed: e.speed * 1.3, size: 10, type: "normal", spawnTime: frameCount, lastAction: frameCount, frozen: 0, trail: [], shieldHp: 0 }); } } enemies.splice(enemies.indexOf(e), 1); } } }); if(boss && !b.targetsHit.includes(boss) && Math.hypot(b.x - boss.x, b.y - boss.y) < (40 + b.size)){ boss.hp--; playSound("hit", 0.2); spawnParticles(b.x, b.y, b.isDroneBullet ? "cyan" : "orange"); b.targetsHit.push(boss); b.pierce--; if(boss.hp <= 0){ slowTimer = 40; hitFlash = 1.5; spawnShockwave(boss.x, boss.y); shake += 30; playSound("level", 0.6); for (let i = 0; i < 50; i++) spawnParticles(boss.x, boss.y, "orange", 1); if (level >= 70) { ALL_UPGRADES.legendary.find(u => u.name === "Hyper-Drive").e(); customAlert("LEVEL 70 BOSS DEFEATED: HYPER-DRIVE ACTIVATED!"); } boss = null; bossActive = false; let bonus = [0, 200, 500, 1000, 2000, 3500, 5000, 7500, 10000, 15000, 25000][currentChapter] || 1000; gems.forEach(g => { g.x = player.x; g.y = player.y; }); if (!isEndless && currentStage === 5) { paused = true; customAlert(`CHAPTER ${currentChapter} CLEAR! (+${bonus} Bonus Coins)`, () => { globalCoins += bonus; backToMenuFromPause(); }); } else { levelUp(); } } } });
 }
 function levelUp(){ level++; xp = 0; playSound("level", 0.4); gems.forEach(g => { g.x = player.x; g.y = player.y; }); if (isEndless && level % 10 === 0 && !bossActive) spawnBoss(); showUpgrades(); }
-function showUpgrades() { slowTimer = 60; shake += 20; spawnShockwave(player.x, player.y); const mode = isEndless ? "ENDLESS_MODE" : `STG_${currentChapter}.${currentStage}`; const informer = document.getElementById("stage-info-banner"); informer.innerHTML = `[${VERSION_ID}] STATUS: ${mode} // ERR_COUNT: ${errCount} // SELECT_MOD...`; setTimeout(() => { paused = true; let ui = document.getElementById("upgradeUI"); let projector = document.getElementById("cards"); projector.innerHTML = ""; ui.style.display = "flex"; let choices = []; let sawEpicThisTime = false; for (let i = 0; i < 3; i++) { let roll = Math.random(), rarity = "common"; if (roll < 0.05) { rarity = "legendary"; } else if (roll < 0.20 || (pityCounter >= 5 && !sawEpicThisTime)) { rarity = "epic"; sawEpicThisTime = true; pityCounter = 0; } else if (roll < 0.50) { rarity = "rare"; } let selectedList = ALL_UPGRADES[rarity]; if (rarity === "legendary") { selectedList = selectedList.filter(up => { if (up.name === "Hyper-Drive" && level < 70) return false; if (up.name === "Super Nova" && superNovaStacks >= 10) return false; return true; }); if (selectedList.length === 0) { rarity = "epic"; selectedList = ALL_UPGRADES[rarity]; } } let up = selectedList[Math.floor(Math.random() * selectedList.length)]; if (choices.some(c => c.name === up.name)) { i--; continue; } choices.push({ ...up, r: rarity }); } if (!sawEpicThisTime) pityCounter++; choices.forEach((up, index) => {
+function showUpgrades() { slowTimer = 60; shake += 20; spawnShockwave(player.x, player.y); const mode = isEndless ? "ENDLESS_MODE" : `STG_${currentChapter}.${currentStage}`; const informer = document.getElementById("stage-info-banner"); informer.innerHTML = `[${VERSION_ID}] STATUS: ${mode} // ERR_COUNT: ${errCount} // SELECT_MOD...`; setTimeout(() => { paused = true; let ui = document.getElementById("upgradeUI"); let projector = document.getElementById("cards"); projector.innerHTML = ""; ui.style.display = "flex"; let choices = []; let sawEpicThisTime = false; for (let i = 0; i < 3; i++) { let roll = Math.random(), rarity = "common"; if (roll < 0.01 && level >= 30) { rarity = "mythic"; } else if (roll < 0.05) { rarity = "legendary"; } else if (roll < 0.20 || (pityCounter >= 5 && !sawEpicThisTime)) { rarity = "epic"; sawEpicThisTime = true; pityCounter = 0; } else if (roll < 0.50) { rarity = "rare"; } let selectedList = ALL_UPGRADES[rarity]; if (!selectedList || selectedList.length === 0) { rarity = "epic"; selectedList = ALL_UPGRADES[rarity]; } if (rarity === "legendary") { selectedList = selectedList.filter(up => { if (up.name === "Hyper-Drive" && level < 70) return false; if (up.name === "Super Nova" && superNovaStacks >= 10) return false; return true; }); if (selectedList.length === 0) { rarity = "epic"; selectedList = ALL_UPGRADES[rarity]; } } let up = selectedList[Math.floor(Math.random() * selectedList.length)]; if (choices.some(c => c.name === up.name)) { i--; continue; } choices.push({ ...up, r: rarity }); } if (!sawEpicThisTime) pityCounter++; choices.forEach((up, index) => {
         let container = document.createElement("div");
         container.className = "card-container";
         
@@ -1199,7 +1650,7 @@ function showUpgrades() { slowTimer = 60; shake += 20; spawnShockwave(player.x, 
         beam.className = "projection-beam";
         beam.innerHTML = `<div class="projection-lines"></div>`;
         beam.style.animationDelay = (index * 0.15) + "s";
-        container.appendChild(beam); let div = document.createElement("div"); div.className = "card " + up.r; let holoLayers = up.r === 'legendary' ? `<div class="holo-foil"></div><div class="holo-gloss"></div><div class="holo-scanlines"></div><div class="holo-sparkle"></div><div class="holo-rim"></div>` : ''; div.innerHTML = `${holoLayers}<div class="rarity-tag">// ${up.r.toUpperCase()} //</div><div class="up-name" style="color: ${up.r === 'epic' || up.r === 'legendary' ? '#fff' : 'inherit'};">${ up.name}</div><div style="font-size:8px; opacity:0.5; margin-bottom: 10px; z-index:7; position:relative;">ID: ${Math.random().toString(16).slice(2, 8)}</div><div class="execute-up">[APPLY_MOD]</div>`; div.style.animationDelay = (index * 0.2) + "s"; div.addEventListener('mousemove', (e) => { const rect = div.getBoundingClientRect(); const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2); const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2); div.style.transform = `rotateX(${dy * -18}deg) rotateY(${dx * 18}deg) scale(1.07)`; div.style.setProperty('--holo-tilt-x', (dx * 30).toFixed(1)); div.style.setProperty('--holo-tilt-y', (dy * 30).toFixed(1)); }); div.addEventListener('mouseleave', () => { div.style.transform = ''; div.style.setProperty('--holo-tilt-x', '0'); div.style.setProperty('--holo-tilt-y', '0'); }); div.onclick = () => { playSound("level", 0.5); shake += 15; div.style.background = "white"; div.style.boxShadow = "0 0 120px white, 0 0 40px cyan"; setTimeout(() => { up.e(); ui.style.display = "none"; paused = false; slowTimer = 0; }, 100); }; container.appendChild(div); projector.appendChild(container); }); }, 200); }
+        container.appendChild(beam); let div = document.createElement("div"); div.className = "card " + up.r; let holoLayers = (up.r === 'legendary' || up.r === 'mythic') ? `<div class="holo-foil"></div><div class="holo-gloss"></div><div class="holo-scanlines"></div><div class="holo-sparkle"></div><div class="holo-rim"></div>` : ''; let descText = CARD_DESCRIPTIONS[up.name] || ''; div.innerHTML = `${holoLayers}<div class="rarity-tag">// ${up.r.toUpperCase()} //</div><div class="up-name" style="color: ${up.r === 'epic' || up.r === 'legendary' || up.r === 'mythic' ? '#fff' : 'inherit'};">${up.name}</div><div class="card-desc">${descText}</div><div style="font-size:8px; opacity:0.5; margin-bottom: 5px; z-index:7; position:relative;">ID: ${Math.random().toString(16).slice(2, 8)}</div><div class="execute-up">[APPLY_MOD]</div>`; div.style.animationDelay = (index * 0.2) + "s"; div.addEventListener('mousemove', (e) => { const rect = div.getBoundingClientRect(); const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2); const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2); div.style.transform = `rotateX(${dy * -18}deg) rotateY(${dx * 18}deg) scale(1.07)`; div.style.setProperty('--holo-tilt-x', (dx * 30).toFixed(1)); div.style.setProperty('--holo-tilt-y', (dy * 30).toFixed(1)); }); div.addEventListener('mouseleave', () => { div.style.transform = ''; div.style.setProperty('--holo-tilt-x', '0'); div.style.setProperty('--holo-tilt-y', '0'); }); div.onclick = () => { playSound("level", 0.5); shake += 15; div.style.background = "white"; div.style.boxShadow = "0 0 120px white, 0 0 40px cyan"; setTimeout(() => { up.e(); ui.style.display = "none"; paused = false; slowTimer = 0; }, 100); }; container.appendChild(div); projector.appendChild(container); }); }, 200); }
         function triggerSuperNova() {
     shake = 80;
     hitFlash = 2.0;
@@ -1404,10 +1855,15 @@ function draw(){
     gridPulse = Math.sin(frameCount * 0.05) * 5; layers.forEach(layer => { ctx.save(); ctx.strokeStyle = layer.color; ctx.lineWidth = 1; let offX = (-player.x * layer.speed) % layer.size; let offY = (-player.y * layer.speed) % layer.size; ctx.beginPath(); for (let x = offX; x < canvas.width; x += layer.size) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); } for (let y = offY; y < canvas.height; y += layer.size) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); } ctx.stroke(); ctx.restore(); });
     if(!gameRunning && !paused) return; ctx.save(); let currentShake = shake; if (hitFlash > 0.1) currentShake += (hitFlash * 5); let sx = 0, sy = 0; if (currentShake > 0) { sx = (Math.random() - 0.5) * currentShake; sy = (Math.random() - 0.5) * currentShake; } ctx.translate(canvas.width / 2 - player.x + sx, canvas.height / 2 - player.y + sy); if (shake > 0) { shake *= 0.90; if (shake < 0.1) shake = 0; }
     stars.forEach(s => { 
-        let opacity = s.brightness * (0.5 + Math.sin(frameCount * 0.02) * 0.5); 
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`; 
-        ctx.fillRect(s.x, s.y, 2, 2); 
+        let twinkle = 0.4 + Math.sin(frameCount * 0.02 * (s.twinkleSpeed || 1) + (s.x * 0.1)) * 0.6;
+        let opacity = s.brightness * twinkle; 
+        let sz = s.size || 1;
+        ctx.fillStyle = s.color ? s.color.replace(')', `,${opacity})`).replace('rgb', 'rgba') : `rgba(255, 255, 255, ${opacity})`;
+        if (sz > 2) { ctx.shadowBlur = sz * 2; ctx.shadowColor = s.color || '#fff'; }
+        ctx.fillRect(s.x, s.y, sz, sz); 
+        if (sz > 2) ctx.shadowBlur = 0;
     });
+    if (frameCount % 3 === 0) { ctx.strokeStyle = 'rgba(0,255,255,0.015)'; ctx.lineWidth = 0.5; for(let i = 0; i < 3; i++) { let nx = (Math.sin(frameCount*0.001 + i*100) * 2000) + player.x; let ny = (Math.cos(frameCount*0.0015 + i*50) * 2000) + player.y; ctx.beginPath(); ctx.arc(nx, ny, 200 + Math.sin(frameCount*0.01+i)*50, 0, Math.PI*2); ctx.stroke(); } }
     gems.forEach(g => { ctx.shadowBlur = 10; ctx.shadowColor = g.isCoin ? "gold" : "cyan"; ctx.fillStyle = g.isCoin ? "#ffd700" : "cyan"; ctx.beginPath(); ctx.arc(g.x, g.y, g.isCoin ? 6 : 4, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; });
     particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 3, 3); });
     shockwaves.forEach((s, i) => { s.radius += 15; s.life -= 0.02; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2); ctx.strokeStyle = `rgba(255,255,255,${s.life})`; ctx.lineWidth = 5; ctx.stroke(); if (s.life <= 0) shockwaves.splice(i, 1); });
